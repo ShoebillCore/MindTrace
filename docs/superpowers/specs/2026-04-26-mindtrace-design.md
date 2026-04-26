@@ -31,7 +31,7 @@ MindTrace is a Chrome extension that captures the main content of any webpage an
 |---|---|
 | Content Script (`content.ts`) | Injected into every page. Adds floating MindTrace button. On click: runs Readability.js, writes result to `chrome.storage.session`, opens `workspace.html` as new tab. |
 | Service Worker (`background.ts`) | Minimal. Handles extension lifecycle events only. |
-| Workspace (`workspace.html` + React SPA) | New tab page. Reads captured page from `chrome.storage.session` on load. Renders split view: article on left, AI workspace on right. |
+| Workspace (`workspace.html` + React SPA) | Opens as a new tab at `chrome-extension://…/workspace.html` (not a new tab page override). Reads captured page from `chrome.storage.session` on load. Renders split view: article on left, AI workspace on right. |
 | AI Provider Adapters | One adapter per provider (Claude, OpenAI, Gemini). Each implements a shared `AIProvider` interface with `stream(prompt, content): AsyncGenerator<string>`. |
 | Settings (chrome.storage.local) | API keys per provider, selected provider, theme preference. No backend, no account. |
 
@@ -130,6 +130,7 @@ MindTrace/
 - Each AI section fires its own independent API call on mount — parallel loading, independent streaming.
 - `QuestionCard` fires its "go deeper" call only on user click — lazy, not pre-generated.
 - `useStream` is a single reusable hook: takes an `AIProvider` + prompt, manages `idle | loading | streaming | done | error` state.
+- Each section component owns its own prompt template — `SummarySection`, `QuestionsSection`, and `InsightsSection` each construct the system prompt and user message they pass to `useStream`. No shared prompt file.
 
 ---
 
