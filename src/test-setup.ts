@@ -36,7 +36,7 @@ vi.stubGlobal('chrome', {
     getURL: vi.fn((path: string) => `chrome-extension://test-id/${path}`),
   },
   tabs: {
-    create: vi.fn().mockResolvedValue({}),
+    create: vi.fn(() => Promise.resolve({})),
   },
 })
 
