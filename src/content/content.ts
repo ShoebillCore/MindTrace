@@ -83,8 +83,10 @@ async function handleClick(): Promise<void> {
     url: location.href,
   }
 
-  await chrome.storage.session.set({ capturedPage: captured })
+  // Open tab first (preserves user-gesture context; window.open is silently dropped
+  // after an await). Storage write is fast; App.tsx retries if it reads null.
   window.open(chrome.runtime.getURL('src/workspace/workspace.html'), '_blank')
+  await chrome.storage.local.set({ capturedPage: captured })
 }
 
 if (document.readyState === 'loading') {

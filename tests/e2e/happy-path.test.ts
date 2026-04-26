@@ -1,10 +1,12 @@
 import { test, expect, chromium } from '@playwright/test'
+import { fileURLToPath } from 'url'
 import path from 'path'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const EXTENSION_PATH = path.resolve(__dirname, '../../dist')
 const FIXTURE_PATH = path.resolve(__dirname, '../fixtures/article.html')
 
-test('MindTrace button appears and workspace opens with all three sections', async () => {
+test('MindTrace button captures article and workspace shows article content', async () => {
   // Launch Chrome with the extension loaded
   const context = await chromium.launchPersistentContext('', {
     headless: false,
@@ -32,23 +34,17 @@ test('MindTrace button appears and workspace opens with all three sections', asy
   // Workspace URL should be the extension page
   expect(workspacePage.url()).toContain('workspace.html')
 
-  // Article panel should be visible
-  await expect(workspacePage.locator('.article-panel')).toBeVisible()
+  // Article panel should display the captured article title (proves content was stored + loaded)
+  await expect(workspacePage.locator('.article-title')).toBeVisible({ timeout: 5000 })
+  await expect(workspacePage.locator('.article-title')).toContainText('Deep Work')
 
-  // All three AI section cards should be present
-  await expect(workspacePage.locator('.section-card').nth(0)).toBeVisible()
-  await expect(workspacePage.locator('.section-card').nth(1)).toBeVisible()
-  await expect(workspacePage.locator('.section-card').nth(2)).toBeVisible()
-
-  // Section labels should show correct content
-  await expect(workspacePage.locator('.section-label').nth(0)).toContainText('Summary')
-  await expect(workspacePage.locator('.section-label').nth(1)).toContainText('Questions')
-  await expect(workspacePage.locator('.section-label').nth(2)).toContainText('Insights')
+  // Without an API key configured, the no-key prompt should mention "API key"
+  await expect(workspacePage.locator('.no-key-prompt')).toContainText('API key')
 
   await context.close()
 })
 
-test('shows no-key prompt when API key is not set', async () => {
+test('workspace shows navigate prompt when opened without capturing an article', async () => {
   const context = await chromium.launchPersistentContext('', {
     headless: false,
     args: [
@@ -57,22 +53,24 @@ test('shows no-key prompt when API key is not set', async () => {
     ],
   })
 
+  // Get the extension ID from the service worker URL
+  let [worker] = context.serviceWorkers()
+  if (!worker) {
+    worker = await context.waitForEvent('serviceworker', { timeout: 5000 })
+  }
+  const extensionId = new URL(worker.url()).hostname
+  const workspaceUrl = `chrome-extension://${extensionId}/src/workspace/workspace.html`
+
+  // Load any page so we don't rely on the fixture (workspace is opened directly)
   const page = await context.newPage()
-  await page.goto(`file://${FIXTURE_PATH}`)
 
-  const btn = page.locator('#mindtrace-btn')
-  await expect(btn).toBeVisible()
+  // Open the workspace directly — no article captured
+  await page.goto(workspaceUrl)
+  await page.waitForLoadState('domcontentloaded')
 
-  const [workspacePage] = await Promise.all([
-    context.waitForEvent('page'),
-    btn.click(),
-  ])
-
-  await workspacePage.waitForLoadState('domcontentloaded')
-
-  // With no API key set, workspace shows the settings prompt
-  await expect(workspacePage.locator('.no-key-prompt')).toBeVisible()
-  await expect(workspacePage.locator('.no-key-prompt')).toContainText('API key')
+  // Workspace should prompt the user to navigate to an article first
+  await expect(page.locator('.no-key-prompt')).toBeVisible()
+  await expect(page.locator('.no-key-prompt')).toContainText('Navigate to an article')
 
   await context.close()
 })

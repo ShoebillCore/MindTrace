@@ -26,10 +26,46 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   useEffect(() => {
-    chrome.storage.session.get('capturedPage').then((data) => {
-      setPage((data.capturedPage as CapturedPage) ?? null)
-      setPageLoaded(true)
+    let done = false
+    let timer: ReturnType<typeof setTimeout> | null = null
+
+    const handleChange = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      area: string,
+    ) => {
+      if (area === 'local' && changes.capturedPage?.newValue && !done) {
+        done = true
+        if (timer) clearTimeout(timer)
+        chrome.storage.onChanged.removeListener(handleChange)
+        setPage(changes.capturedPage.newValue as CapturedPage)
+        setPageLoaded(true)
+      }
+    }
+
+    chrome.storage.local.get('capturedPage').then((data) => {
+      if (done) return
+      if (data.capturedPage) {
+        done = true
+        setPage(data.capturedPage as CapturedPage)
+        setPageLoaded(true)
+        return
+      }
+      // Content script opens the tab before writing — listen for the write.
+      chrome.storage.onChanged.addListener(handleChange)
+      timer = setTimeout(() => {
+        if (!done) {
+          done = true
+          chrome.storage.onChanged.removeListener(handleChange)
+          setPageLoaded(true)
+        }
+      }, 3000)
     })
+
+    return () => {
+      done = true
+      if (timer) clearTimeout(timer)
+      chrome.storage.onChanged.removeListener(handleChange)
+    }
   }, [])
 
   if (!pageLoaded || !settingsLoaded) {
