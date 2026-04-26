@@ -34,14 +34,17 @@ test('streams chunks and reaches done', async () => {
 
 test('sets status to loading then streaming', async () => {
   const statuses: string[] = []
-  let resolveChunk!: () => void
-  const blocker = new Promise<void>((res) => { resolveChunk = res })
+  let resolveFirst!: () => void
+  let resolveSecond!: () => void
+  const firstBlocker = new Promise<void>((res) => { resolveFirst = res })
+  const secondBlocker = new Promise<void>((res) => { resolveSecond = res })
 
   const provider: AIProvider = {
     name: 'slow',
     async *stream() {
+      await firstBlocker
       yield 'first'
-      await blocker
+      await secondBlocker
       yield 'second'
     },
   }
@@ -49,14 +52,18 @@ test('sets status to loading then streaming', async () => {
   const { result } = renderHook(() => useStream(provider))
 
   act(() => { result.current.start('sys', 'user') })
+  await waitFor(() => expect(result.current.status).toBe('loading'))
+  statuses.push(result.current.status)
+
+  await act(async () => { resolveFirst() })
   await waitFor(() => expect(result.current.status).toBe('streaming'))
   statuses.push(result.current.status)
 
-  await act(async () => { resolveChunk() })
+  await act(async () => { resolveSecond() })
   await waitFor(() => expect(result.current.status).toBe('done'))
   statuses.push(result.current.status)
 
-  expect(statuses).toEqual(['streaming', 'done'])
+  expect(statuses).toEqual(['loading', 'streaming', 'done'])
 })
 
 test('handles generic error', async () => {

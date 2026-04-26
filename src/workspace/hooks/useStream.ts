@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import type { AIProvider, StreamStatus } from '../providers/types'
 import { ProviderError } from '../providers/types'
 
@@ -16,10 +16,12 @@ export function useStream(provider: AIProvider | null) {
     error: null,
     errorStatus: undefined,
   })
+  const runIdRef = useRef(0)
 
   const start = useCallback(
     async (systemPrompt: string, userContent: string) => {
       if (!provider) return
+      const runId = ++runIdRef.current
       setState({ text: '', status: 'loading', error: null, errorStatus: undefined })
 
       try {
@@ -27,6 +29,7 @@ export function useStream(provider: AIProvider | null) {
         let started = false
 
         for await (const chunk of gen) {
+          if (runId !== runIdRef.current) return
           if (!started) {
             started = true
             setState((s) => ({ ...s, status: 'streaming' }))
@@ -34,8 +37,10 @@ export function useStream(provider: AIProvider | null) {
           setState((s) => ({ ...s, text: s.text + chunk }))
         }
 
+        if (runId !== runIdRef.current) return
         setState((s) => ({ ...s, status: 'done' }))
       } catch (err) {
+        if (runId !== runIdRef.current) return
         if (err instanceof ProviderError) {
           setState((s) => ({
             ...s,
