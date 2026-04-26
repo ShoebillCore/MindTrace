@@ -84,7 +84,7 @@ async function handleClick(): Promise<void> {
   }
 
   await chrome.storage.session.set({ capturedPage: captured })
-  window.open(chrome.runtime.getURL('workspace.html'), '_blank')
+  window.open(chrome.runtime.getURL('src/workspace/workspace.html'), '_blank')
 }
 
 if (document.readyState === 'loading') {
