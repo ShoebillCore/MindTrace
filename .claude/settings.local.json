@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash scripts/start-server.sh --project-dir /Users/chengjing/Desktop/Github/MindTrace)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git checkout *)",
+      "Bash(git -C /Users/chengjing/Desktop/Github/MindTrace branch)",
+      "Bash(python3 -c ' *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(git -C /Users/chengjing/Desktop/Github/MindTrace add package.json manifest.json vite.config.ts tsconfig.json src/ public/)",
+      "Bash(git -C /Users/chengjing/Desktop/Github/MindTrace status)",
+      "Bash(git *)",
+      "Bash(npm test *)",
+      "Bash(npx vitest *)",
+      "Bash(npx tsc *)",
+      "Bash(/Users/chengjing/Desktop/Github/MindTrace/node_modules/.bin/tsc *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d['icons']\\)\")",
+      "Bash(npx playwright *)",
+      "Bash(gh pr *)",
+      "Bash(nvm use *)"
+    ]
+  }
+}
