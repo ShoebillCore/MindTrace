@@ -7,6 +7,7 @@ import HighlightPopup from './HighlightPopup'
 
 interface ArticlePanelProps {
   page: CapturedPage | null
+  onAskAI?: (text: string) => void
 }
 
 interface PopupState {
@@ -23,7 +24,7 @@ function popupPosition(rect: DOMRect): { top: number; left: number } {
   }
 }
 
-export default function ArticlePanel({ page }: ArticlePanelProps) {
+export default function ArticlePanel({ page, onAskAI }: ArticlePanelProps) {
   const { highlights, addHighlight, updateHighlight, removeHighlight } = useHighlights(
     page?.url ?? '',
   )
@@ -132,6 +133,15 @@ export default function ArticlePanel({ page }: ArticlePanelProps) {
             popup.mode === 'new' && popup.quote
               ? () => {
                   navigator.clipboard.writeText(popup.quote!)
+                  window.getSelection()?.removeAllRanges()
+                  setPopup(null)
+                }
+              : undefined
+          }
+          onAskAI={
+            popup.mode === 'new' && popup.quote && onAskAI
+              ? () => {
+                  onAskAI(popup.quote!)
                   window.getSelection()?.removeAllRanges()
                   setPopup(null)
                 }

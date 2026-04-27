@@ -16,6 +16,7 @@ interface HighlightPopupProps {
   quote?: string
   onColorSelect: (color: HighlightColor) => void
   onCopy?: () => void
+  onAskAI?: () => void
   onDelete?: () => void
   onDismiss: () => void
 }
@@ -25,6 +26,7 @@ export default function HighlightPopup({
   mode,
   onColorSelect,
   onCopy,
+  onAskAI,
   onDelete,
   onDismiss,
 }: HighlightPopupProps) {
@@ -65,6 +67,19 @@ export default function HighlightPopup({
             title="Copy"
           >
             ⎘
+          </button>
+        </>
+      )}
+      {mode === 'new' && onAskAI && (
+        <>
+          <div className="highlight-popup-divider" />
+          <button
+            className="popup-ask-ai-btn"
+            onClick={onAskAI}
+            aria-label="Ask AI about selection"
+            title="Ask AI"
+          >
+            Ask AI
           </button>
         </>
       )}

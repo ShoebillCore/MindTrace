@@ -1,5 +1,5 @@
 // src/workspace/App.tsx
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTheme } from './hooks/useTheme'
 import { useSettings } from './hooks/useSettings'
 import { createClaudeProvider } from './providers/claude'
@@ -27,6 +27,35 @@ export default function App() {
   const [pageLoaded, setPageLoaded] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
+  const [pendingAIMessage, setPendingAIMessage] = useState<string | null>(null)
+  const [chatWidth, setChatWidth] = useState(340)
+  const chatWidthRef = useRef(340)
+
+  const handleAskAI = (text: string) => {
+    setChatOpen(true)
+    setPendingAIMessage(text)
+  }
+
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = chatWidthRef.current
+
+    const onMove = (ev: MouseEvent) => {
+      const delta = startX - ev.clientX
+      const next = Math.min(640, Math.max(260, startWidth + delta))
+      setChatWidth(next)
+      chatWidthRef.current = next
+    }
+
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [])
 
   useEffect(() => {
     let done = false
@@ -94,14 +123,18 @@ export default function App() {
         onDownload={() => page && downloadPageAsMarkdown(page)}
       />
       <main className="workspace-layout">
-        <ArticlePanel page={page} />
+        <ArticlePanel page={page} onAskAI={handleAskAI} />
         {chatOpen && (
-          <ChatPanel
-            page={page}
-            provider={provider}
-            onClose={() => setChatOpen(false)}
-            onSettingsOpen={() => setSettingsOpen(true)}
-          />
+          <div className="chat-panel-wrapper" style={{ width: chatWidth }}>
+            <div className="chat-resize-handle" onMouseDown={handleResizeStart} />
+            <ChatPanel
+              page={page}
+              provider={provider}
+              onClose={() => { setChatOpen(false); setPendingAIMessage(null) }}
+              onSettingsOpen={() => setSettingsOpen(true)}
+              initialMessage={pendingAIMessage}
+            />
+          </div>
         )}
       </main>
       {!chatOpen && page && (

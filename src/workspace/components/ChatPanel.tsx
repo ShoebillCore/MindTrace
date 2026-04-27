@@ -16,9 +16,10 @@ interface ChatPanelProps {
   provider: AIProvider | null
   onClose: () => void
   onSettingsOpen: () => void
+  initialMessage?: string | null
 }
 
-export default function ChatPanel({ page, provider, onClose, onSettingsOpen }: ChatPanelProps) {
+export default function ChatPanel({ page, provider, onClose, onSettingsOpen, initialMessage }: ChatPanelProps) {
   const { messages, addUserMessage, addAssistantMessage, updateMessage, finalizeMessage, setStreamingError } =
     useChatHistory()
   const stream = useStream(provider)
@@ -77,7 +78,7 @@ export default function ChatPanel({ page, provider, onClose, onSettingsOpen }: C
       <ChatHeader provider={provider} onClose={onClose} />
       <QuickActions disabled={isStreaming || !page} onAction={handleQuickAction} />
       <MessageList messages={messages} />
-      <ChatInput onSend={handleUserMessage} disabled={isStreaming || !page} />
+      <ChatInput onSend={handleUserMessage} disabled={isStreaming || !page} initialValue={initialMessage ?? undefined} />
     </div>
   )
 }
