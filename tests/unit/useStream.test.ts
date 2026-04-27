@@ -6,6 +6,7 @@ import { ProviderError } from '../../src/workspace/providers/types'
 function makeProvider(chunks: string[]): AIProvider {
   return {
     name: 'mock',
+    model: 'mock-model',
     async *stream() {
       for (const chunk of chunks) yield chunk
     },
@@ -41,6 +42,7 @@ test('sets status to loading then streaming', async () => {
 
   const provider: AIProvider = {
     name: 'slow',
+    model: 'mock-model',
     async *stream() {
       await firstBlocker
       yield 'first'
@@ -69,6 +71,7 @@ test('sets status to loading then streaming', async () => {
 test('handles generic error', async () => {
   const provider: AIProvider = {
     name: 'error',
+    model: 'mock-model',
     async *stream() {
       throw new Error('network failure')
     },
@@ -87,6 +90,7 @@ test('handles generic error', async () => {
 test('handles ProviderError and exposes status code', async () => {
   const provider: AIProvider = {
     name: 'ratelimit',
+    model: 'mock-model',
     async *stream() {
       throw new ProviderError('Too Many Requests', 429)
     },
@@ -104,6 +108,7 @@ test('handles ProviderError and exposes status code', async () => {
 test('preserves partial text on stream interruption', async () => {
   const provider: AIProvider = {
     name: 'partial',
+    model: 'mock-model',
     async *stream() {
       yield 'partial content'
       throw new Error('stream cut')

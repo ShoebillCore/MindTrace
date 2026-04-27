@@ -65,3 +65,8 @@ test('throws ProviderError with status 401 on invalid key', async () => {
     for await (const _ of provider.stream('s', 'u')) { /* consume */ }
   }).rejects.toBeInstanceOf(ProviderError)
 })
+
+test('exposes correct model name', () => {
+  const provider = createClaudeProvider('key')
+  expect(provider.model).toBe('claude-sonnet-4-6')
+})
