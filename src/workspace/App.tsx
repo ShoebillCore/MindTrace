@@ -6,6 +6,7 @@ import { createClaudeProvider } from './providers/claude'
 import { createOpenAIProvider } from './providers/openai'
 import { createGeminiProvider } from './providers/gemini'
 import type { AIProvider, CapturedPage } from './providers/types'
+import { downloadPageAsMarkdown } from './utils/htmlToMarkdown'
 import Header from './components/Header'
 import ArticlePanel from './components/ArticlePanel'
 import ChatPanel from './components/ChatPanel'
@@ -90,6 +91,7 @@ export default function App() {
         onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         onProviderChange={(p) => saveSettings({ selectedProvider: p })}
         onSettingsOpen={() => setSettingsOpen(true)}
+        onDownload={() => page && downloadPageAsMarkdown(page)}
       />
       <main className="workspace-layout">
         <ArticlePanel page={page} />

@@ -8,6 +8,7 @@ interface HeaderProps {
   onThemeToggle: () => void
   onProviderChange: (p: ProviderName) => void
   onSettingsOpen: () => void
+  onDownload: () => void
 }
 
 const PROVIDERS: { value: ProviderName; label: string }[] = [
@@ -23,6 +24,7 @@ export default function Header({
   onThemeToggle,
   onProviderChange,
   onSettingsOpen,
+  onDownload,
 }: HeaderProps) {
   const isDark = theme === 'dark'
 
@@ -60,6 +62,20 @@ export default function Header({
             className="theme-toggle-knob"
             style={{ left: isDark ? '16px' : '3px' }}
           />
+        </button>
+
+        <button
+          className="download-btn"
+          onClick={onDownload}
+          disabled={!page}
+          title="Download article as Markdown (.md file)"
+          aria-label="Download article as Markdown"
+        >
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7.5 1.5v8" />
+            <path d="M4.5 7l3 2.5 3-2.5" />
+            <path d="M2.5 12.5h10" />
+          </svg>
         </button>
 
         <button

@@ -126,7 +126,17 @@ export default function ArticlePanel({ page }: ArticlePanelProps) {
         <HighlightPopup
           position={popup.position}
           mode={popup.mode}
+          quote={popup.quote}
           onColorSelect={handleColorSelect}
+          onCopy={
+            popup.mode === 'new' && popup.quote
+              ? () => {
+                  navigator.clipboard.writeText(popup.quote!)
+                  window.getSelection()?.removeAllRanges()
+                  setPopup(null)
+                }
+              : undefined
+          }
           onDelete={popup.mode === 'edit' ? handleDelete : undefined}
           onDismiss={() => setPopup(null)}
         />

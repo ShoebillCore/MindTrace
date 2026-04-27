@@ -13,7 +13,9 @@ const COLORS: { color: HighlightColor; hex: string }[] = [
 interface HighlightPopupProps {
   position: { top: number; left: number }
   mode: 'new' | 'edit'
+  quote?: string
   onColorSelect: (color: HighlightColor) => void
+  onCopy?: () => void
   onDelete?: () => void
   onDismiss: () => void
 }
@@ -22,6 +24,7 @@ export default function HighlightPopup({
   position,
   mode,
   onColorSelect,
+  onCopy,
   onDelete,
   onDismiss,
 }: HighlightPopupProps) {
@@ -52,6 +55,19 @@ export default function HighlightPopup({
           aria-label={`Highlight ${color}`}
         />
       ))}
+      {mode === 'new' && onCopy && (
+        <>
+          <div className="highlight-popup-divider" />
+          <button
+            className="popup-copy-btn"
+            onClick={onCopy}
+            aria-label="Copy text"
+            title="Copy"
+          >
+            ⎘
+          </button>
+        </>
+      )}
       {mode === 'edit' && onDelete && (
         <>
           <div className="highlight-popup-divider" />

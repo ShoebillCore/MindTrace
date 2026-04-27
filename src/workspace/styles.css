@@ -1,17 +1,17 @@
 :root[data-theme='dark'] {
-  --bg-primary: #0f0f1a;
-  --bg-secondary: #12122a;
-  --bg-card: #12122a;
-  --bg-hover: #1a1a30;
-  --border: #2a2a4a;
-  --text-primary: #c8c8e8;
-  --text-secondary: #9090b0;
-  --text-muted: #5a5a7a;
-  --accent-purple: #a78bfa;
-  --accent-blue: #60a5fa;
-  --accent-green: #34d399;
+  --bg-primary: #111111;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #1a1a1a;
+  --bg-hover: #242424;
+  --border: #2e2e2e;
+  --text-primary: #e8e8e8;
+  --text-secondary: #a0a0a0;
+  --text-muted: #585858;
+  --accent-purple: #5ec43e;
+  --accent-blue: #2cbcb4;
+  --accent-green: #5ec43e;
   --error: #f87171;
-  --warning-bg: #422006;
+  --warning-bg: #2a1a0a;
   --warning-text: #fbbf24;
   --warning-border: #92400e;
 }
@@ -20,14 +20,14 @@
   --bg-primary: #fafafa;
   --bg-secondary: #ffffff;
   --bg-card: #ffffff;
-  --bg-hover: #f4f4ff;
-  --border: #e8e8f0;
-  --text-primary: #1a1a2e;
-  --text-secondary: #505070;
-  --text-muted: #b0b0c0;
-  --accent-purple: #7c3aed;
-  --accent-blue: #2563eb;
-  --accent-green: #059669;
+  --bg-hover: #f0f0f0;
+  --border: #e0e0e0;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #9a9a9a;
+  --accent-purple: #2d8a38;
+  --accent-blue: #1a8a84;
+  --accent-green: #2d8a38;
   --error: #dc2626;
   --warning-bg: #fef3c7;
   --warning-text: #92400e;
@@ -130,11 +130,32 @@ body {
 .theme-toggle-knob {
   width: 14px;
   height: 14px;
-  background: var(--accent-purple);
+  background: var(--accent-green);
   border-radius: 50%;
   position: absolute;
   top: 3px;
   transition: left 0.2s;
+}
+
+.download-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.download-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+
+.download-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
 .settings-btn {
@@ -505,7 +526,7 @@ body {
 .chat-status-dot {
   width: 8px;
   height: 8px;
-  background: #22c55e;
+  background: #5ec43e;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -775,4 +796,24 @@ body {
 
 .highlight-delete-btn:hover {
   background: rgba(239, 68, 68, 0.3);
+}
+
+.popup-copy-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(44, 188, 180, 0.15);
+  border: 1px solid #2cbcb4;
+  color: #2cbcb4;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.popup-copy-btn:hover {
+  background: rgba(44, 188, 180, 0.3);
 }

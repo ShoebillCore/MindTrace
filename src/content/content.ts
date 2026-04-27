@@ -15,7 +15,7 @@ function injectButton(): void {
     'width:44px',
     'height:44px',
     'border-radius:50%',
-    'background:#7c3aed',
+    'background:#1c1c1c',
     'color:#fff',
     'font-weight:700',
     'font-size:18px',
