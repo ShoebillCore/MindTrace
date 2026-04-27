@@ -4,6 +4,7 @@ export type ProviderName = 'claude' | 'openai' | 'gemini'
 
 export interface AIProvider {
   name: string
+  model: string
   stream(systemPrompt: string, userContent: string): AsyncGenerator<string>
 }
 

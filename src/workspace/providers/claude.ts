@@ -4,6 +4,7 @@ import { ProviderError } from './types'
 export function createClaudeProvider(apiKey: string): AIProvider {
   return {
     name: 'Claude',
+    model: 'claude-sonnet-4-6',
     async *stream(systemPrompt: string, userContent: string) {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',

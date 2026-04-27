@@ -38,13 +38,16 @@ test('MindTrace button captures article and workspace shows article content', as
   await expect(workspacePage.locator('.article-title')).toBeVisible({ timeout: 5000 })
   await expect(workspacePage.locator('.article-title')).toContainText('Deep Work')
 
+  // Chat is closed by default — open it via the floating button
+  await workspacePage.locator('.chat-open-btn').click()
+
   // Without an API key configured, the no-key prompt should mention "API key"
   await expect(workspacePage.locator('.no-key-prompt')).toContainText('API key')
 
   await context.close()
 })
 
-test('workspace shows navigate prompt when opened without capturing an article', async () => {
+test('workspace shows no-article state when opened without capturing an article', async () => {
   const context = await chromium.launchPersistentContext('', {
     headless: false,
     args: [
@@ -68,9 +71,10 @@ test('workspace shows navigate prompt when opened without capturing an article',
   await page.goto(workspaceUrl)
   await page.waitForLoadState('domcontentloaded')
 
-  // Workspace should prompt the user to navigate to an article first
-  await expect(page.locator('.no-key-prompt')).toBeVisible()
-  await expect(page.locator('.no-key-prompt')).toContainText('Navigate to an article')
+  // With no article captured, the article panel shows the null state
+  // (the chat-open-btn is only shown when page is non-null, so we check the article panel instead)
+  await expect(page.locator('.article-panel p')).toBeVisible()
+  await expect(page.locator('.article-panel p')).toContainText('No article captured.')
 
   await context.close()
 })

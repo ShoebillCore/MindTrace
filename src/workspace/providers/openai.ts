@@ -4,6 +4,7 @@ import { ProviderError } from './types'
 export function createOpenAIProvider(apiKey: string): AIProvider {
   return {
     name: 'OpenAI',
+    model: 'gpt-4o',
     async *stream(systemPrompt: string, userContent: string) {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
