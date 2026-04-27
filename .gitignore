@@ -4,3 +4,6 @@ dist/
 logo_new.png
 
 .claude/
+claude/
+test-results/
+tests/
