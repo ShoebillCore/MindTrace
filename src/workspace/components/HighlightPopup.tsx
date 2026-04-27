@@ -1,0 +1,70 @@
+import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import type { HighlightColor } from '../hooks/useHighlights'
+
+const COLORS: { color: HighlightColor; hex: string }[] = [
+  { color: 'yellow', hex: '#facc15' },
+  { color: 'green',  hex: '#4ade80' },
+  { color: 'blue',   hex: '#60a5fa' },
+  { color: 'pink',   hex: '#f472b6' },
+  { color: 'purple', hex: '#a78bfa' },
+]
+
+interface HighlightPopupProps {
+  position: { top: number; left: number }
+  mode: 'new' | 'edit'
+  onColorSelect: (color: HighlightColor) => void
+  onDelete?: () => void
+  onDismiss: () => void
+}
+
+export default function HighlightPopup({
+  position,
+  mode,
+  onColorSelect,
+  onDelete,
+  onDismiss,
+}: HighlightPopupProps) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onDismiss()
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [onDismiss])
+
+  return createPortal(
+    <div
+      ref={ref}
+      className="highlight-popup"
+      style={{ top: position.top, left: position.left }}
+    >
+      {COLORS.map(({ color, hex }) => (
+        <button
+          key={color}
+          className="highlight-color-dot"
+          style={{ background: hex }}
+          onClick={() => onColorSelect(color)}
+          aria-label={`Highlight ${color}`}
+        />
+      ))}
+      {mode === 'edit' && onDelete && (
+        <>
+          <div className="highlight-popup-divider" />
+          <button
+            className="highlight-delete-btn"
+            onClick={onDelete}
+            aria-label="Remove highlight"
+          >
+            ✕
+          </button>
+        </>
+      )}
+    </div>,
+    document.body,
+  )
+}
