@@ -2,7 +2,7 @@
 
 A Chrome extension that transforms any article into an active reading workspace. Highlight text in five colors, open a side chat to ask questions, get summaries, and extract insights — all without leaving the page.
 
-![MindTrace Logo](logo_new.png)
+![MindTrace Logo](/public/icons/icon128.png)
 
 ---
 
