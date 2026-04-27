@@ -55,6 +55,22 @@ export default function ChatPanel({ page, provider, onClose, onSettingsOpen }: C
     stream.start(CHAT_SYSTEM_PROMPT(page.textContent), text)
   }
 
+  if (!page) {
+    return (
+      <div className="chat-panel">
+        <div className="chat-header">
+          <span className="chat-provider-name">Chat</span>
+          <button className="chat-close-btn" onClick={onClose} aria-label="Close chat">
+            ✕
+          </button>
+        </div>
+        <div className="no-key-prompt">
+          <p>Navigate to an article and click the MindTrace button to get started.</p>
+        </div>
+      </div>
+    )
+  }
+
   if (!provider) {
     return (
       <div className="chat-panel">

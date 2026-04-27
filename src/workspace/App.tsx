@@ -1,3 +1,4 @@
+// src/workspace/App.tsx
 import { useEffect, useState } from 'react'
 import { useTheme } from './hooks/useTheme'
 import { useSettings } from './hooks/useSettings'
@@ -7,7 +8,7 @@ import { createGeminiProvider } from './providers/gemini'
 import type { AIProvider, CapturedPage } from './providers/types'
 import Header from './components/Header'
 import ArticlePanel from './components/ArticlePanel'
-import WorkspacePanel from './components/WorkspacePanel'
+import ChatPanel from './components/ChatPanel'
 import SettingsDrawer from './components/SettingsDrawer'
 
 function getProvider(name: string, apiKey: string): AIProvider {
@@ -24,6 +25,7 @@ export default function App() {
   const [page, setPage] = useState<CapturedPage | null>(null)
   const [pageLoaded, setPageLoaded] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(true)
 
   useEffect(() => {
     let done = false
@@ -50,7 +52,6 @@ export default function App() {
         setPageLoaded(true)
         return
       }
-      // Content script opens the tab before writing — listen for the write.
       chrome.storage.onChanged.addListener(handleChange)
       timer = setTimeout(() => {
         if (!done) {
@@ -80,9 +81,7 @@ export default function App() {
   return (
     <div className="app" data-theme={theme}>
       {page?.isShort && (
-        <div className="warning-banner">
-          Short content — AI responses may be limited.
-        </div>
+        <div className="warning-banner">Short content — AI responses may be limited.</div>
       )}
       <Header
         page={page}
@@ -94,12 +93,24 @@ export default function App() {
       />
       <main className="workspace-layout">
         <ArticlePanel page={page} />
-        <WorkspacePanel
-          page={page}
-          provider={provider}
-          onSettingsOpen={() => setSettingsOpen(true)}
-        />
+        {chatOpen && (
+          <ChatPanel
+            page={page}
+            provider={provider}
+            onClose={() => setChatOpen(false)}
+            onSettingsOpen={() => setSettingsOpen(true)}
+          />
+        )}
       </main>
+      {!chatOpen && page && (
+        <button
+          className="chat-open-btn"
+          onClick={() => setChatOpen(true)}
+          title="Open AI Chat"
+        >
+          💬
+        </button>
+      )}
       {settingsOpen && (
         <SettingsDrawer
           settings={settings}
