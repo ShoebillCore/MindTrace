@@ -25,7 +25,7 @@ export default function App() {
   const [page, setPage] = useState<CapturedPage | null>(null)
   const [pageLoaded, setPageLoaded] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [chatOpen, setChatOpen] = useState(true)
+  const [chatOpen, setChatOpen] = useState(false)
 
   useEffect(() => {
     let done = false
