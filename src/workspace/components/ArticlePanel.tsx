@@ -1,5 +1,5 @@
 // src/workspace/components/ArticlePanel.tsx
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import type { CapturedPage } from '../providers/types'
 import { useHighlights } from '../hooks/useHighlights'
 import type { HighlightColor } from '../hooks/useHighlights'
@@ -8,6 +8,7 @@ import HighlightPopup from './HighlightPopup'
 interface ArticlePanelProps {
   page: CapturedPage | null
   onAskAI?: (text: string) => void
+  articleBodyRef: React.RefObject<HTMLDivElement | null>
 }
 
 interface PopupState {
@@ -24,12 +25,11 @@ function popupPosition(rect: DOMRect): { top: number; left: number } {
   }
 }
 
-export default function ArticlePanel({ page, onAskAI }: ArticlePanelProps) {
+export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticlePanelProps) {
   const { highlights, addHighlight, updateHighlight, removeHighlight } = useHighlights(
     page?.url ?? '',
   )
   const [popup, setPopup] = useState<PopupState | null>(null)
-  const articleBodyRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     const body = articleBodyRef.current

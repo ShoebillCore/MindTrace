@@ -5,6 +5,8 @@ interface HeaderProps {
   page: CapturedPage | null
   settings: Settings
   theme: Theme
+  outlineOpen: boolean
+  onOutlineToggle: () => void
   onThemeToggle: () => void
   onProviderChange: (p: ProviderName) => void
   onSettingsOpen: () => void
@@ -21,6 +23,8 @@ export default function Header({
   page,
   settings,
   theme,
+  outlineOpen,
+  onOutlineToggle,
   onThemeToggle,
   onProviderChange,
   onSettingsOpen,
@@ -31,15 +35,22 @@ export default function Header({
   return (
     <header className="header">
       <div className="header-left">
-        <span className="header-logo">MINDTRACE</span>
-        {page && (
-          <span className="header-breadcrumb">
-            {page.siteName && `${page.siteName} · `}
-            {page.title}
-          </span>
-        )}
+        <button
+          className="outline-toggle-btn"
+          onClick={onOutlineToggle}
+          disabled={!page}
+          title={outlineOpen ? 'Hide outline' : 'Show outline'}
+          aria-label="Toggle outline panel"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+            <line x1="3" y1="4" x2="13" y2="4" />
+            <line x1="6" y1="8" x2="13" y2="8" />
+            <line x1="6" y1="12" x2="13" y2="12" />
+            <line x1="3" y1="8" x2="3" y2="8" strokeWidth="2" />
+            <line x1="3" y1="12" x2="3" y2="12" strokeWidth="2" />
+          </svg>
+        </button>
       </div>
-
       <div className="header-right">
         <select
           className="provider-select"

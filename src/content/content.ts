@@ -1,4 +1,5 @@
-import { Readability } from '@mozilla/readability'
+import Defuddle from 'defuddle'
+import DOMPurify from 'dompurify'
 import type { CapturedPage } from '../workspace/providers/types'
 
 function injectButton(): void {
@@ -59,32 +60,32 @@ function showToast(message: string): void {
 }
 
 async function handleClick(): Promise<void> {
-  const clone = document.cloneNode(true) as Document
-  const reader = new Readability(clone)
-  const article = reader.parse()
+  const result = new Defuddle(document).parse()
 
-  if (!article?.textContent?.trim()) {
+  if (!result?.content?.trim()) {
     showToast("MindTrace couldn't extract readable content from this page.")
     return
   }
 
-  const words = article.textContent.trim().split(/\s+/)
-  const wordCount = words.length
+  const sanitizedHtml = DOMPurify.sanitize(result.content)
+
+  const tempDoc = new DOMParser().parseFromString(sanitizedHtml, 'text/html')
+  const textContent = tempDoc.body.textContent ?? ''
+
+  const wordCount = result.wordCount ?? textContent.trim().split(/\s+/).filter(Boolean).length
 
   const captured: CapturedPage = {
-    title: article.title || document.title,
-    byline: article.byline || '',
-    siteName: article.siteName || new URL(location.href).hostname,
-    content: article.content || '',
-    textContent: article.textContent,
-    excerpt: article.excerpt || '',
+    title: result.title || document.title,
+    byline: result.author || '',
+    siteName: result.site || new URL(location.href).hostname,
+    content: sanitizedHtml,
+    textContent,
+    excerpt: result.description || '',
     wordCount,
     isShort: wordCount < 200,
     url: location.href,
   }
 
-  // Open tab first (preserves user-gesture context; window.open is silently dropped
-  // after an await). Storage write is fast; App.tsx retries if it reads null.
   window.open(chrome.runtime.getURL('src/workspace/workspace.html'), '_blank')
   await chrome.storage.local.set({ capturedPage: captured })
 }

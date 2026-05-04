@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react'
 import { useStream } from '../hooks/useStream'
 import { useChatHistory } from '../hooks/useChatHistory'
 import type { Message } from '../hooks/useChatHistory'
-import type { AIProvider, CapturedPage } from '../providers/types'
+import type { AIProvider, CapturedPage, Settings, ProviderName } from '../providers/types'
+import type { Theme } from '../hooks/useTheme'
 import ChatHeader from './ChatHeader'
 import QuickActions from './QuickActions'
 import MessageList from './MessageList'
@@ -14,12 +15,21 @@ const CHAT_SYSTEM_PROMPT = (articleText: string) =>
 interface ChatPanelProps {
   page: CapturedPage | null
   provider: AIProvider | null
+  settings: Settings
+  theme: Theme
   onClose: () => void
+  onThemeToggle: () => void
+  onProviderChange: (p: ProviderName) => void
   onSettingsOpen: () => void
+  onDownload: () => void
   initialMessage?: string | null
 }
 
-export default function ChatPanel({ page, provider, onClose, onSettingsOpen, initialMessage }: ChatPanelProps) {
+export default function ChatPanel({
+  page, provider, settings, theme,
+  onClose, onThemeToggle, onProviderChange, onSettingsOpen, onDownload,
+  initialMessage,
+}: ChatPanelProps) {
   const { messages, addUserMessage, addAssistantMessage, updateMessage, finalizeMessage, setStreamingError } =
     useChatHistory()
   const stream = useStream(provider)
@@ -56,15 +66,12 @@ export default function ChatPanel({ page, provider, onClose, onSettingsOpen, ini
     stream.start(CHAT_SYSTEM_PROMPT(page.textContent), text)
   }
 
+  const headerProps = { settings, theme, page, onClose, onThemeToggle, onProviderChange, onSettingsOpen, onDownload }
+
   if (!provider) {
     return (
       <div className="chat-panel">
-        <div className="chat-header">
-          <span className="chat-provider-name">Chat</span>
-          <button className="chat-close-btn" onClick={onClose} aria-label="Close chat">
-            ✕
-          </button>
-        </div>
+        <ChatHeader provider={null} {...headerProps} />
         <div className="no-key-prompt">
           <p>Enter an API key to activate the AI workspace.</p>
           <button onClick={onSettingsOpen}>Open Settings</button>
@@ -75,7 +82,7 @@ export default function ChatPanel({ page, provider, onClose, onSettingsOpen, ini
 
   return (
     <div className="chat-panel">
-      <ChatHeader provider={provider} onClose={onClose} />
+      <ChatHeader provider={provider} {...headerProps} />
       <QuickActions disabled={isStreaming || !page} onAction={handleQuickAction} />
       <MessageList messages={messages} />
       <ChatInput onSend={handleUserMessage} disabled={isStreaming || !page} initialValue={initialMessage ?? undefined} />

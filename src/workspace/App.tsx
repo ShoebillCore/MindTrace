@@ -2,15 +2,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTheme } from './hooks/useTheme'
 import { useSettings } from './hooks/useSettings'
+import { useOutline } from './hooks/useOutline'
 import { createClaudeProvider } from './providers/claude'
 import { createOpenAIProvider } from './providers/openai'
 import { createGeminiProvider } from './providers/gemini'
 import type { AIProvider, CapturedPage } from './providers/types'
 import { downloadPageAsMarkdown } from './utils/htmlToMarkdown'
-import Header from './components/Header'
 import ArticlePanel from './components/ArticlePanel'
 import ChatPanel from './components/ChatPanel'
 import SettingsDrawer from './components/SettingsDrawer'
+import OutlinePanel from './components/OutlinePanel'
+import Header from './components/Header'
 
 function getProvider(name: string, apiKey: string): AIProvider {
   switch (name) {
@@ -30,6 +32,9 @@ export default function App() {
   const [pendingAIMessage, setPendingAIMessage] = useState<string | null>(null)
   const [chatWidth, setChatWidth] = useState(340)
   const chatWidthRef = useRef(340)
+  const articleBodyRef = useRef<HTMLDivElement>(null)
+  const [outlineOpen, setOutlineOpen] = useState(true)
+  const { items: outlineItems, activeId: outlineActiveId } = useOutline(articleBodyRef, page)
 
   const handleAskAI = (text: string) => {
     setChatOpen(true)
@@ -110,28 +115,36 @@ export default function App() {
 
   return (
     <div className="app" data-theme={theme}>
-      {page?.isShort && (
-        <div className="warning-banner">Short content — AI responses may be limited.</div>
-      )}
       <Header
         page={page}
         settings={settings}
         theme={theme}
+        outlineOpen={outlineOpen}
+        onOutlineToggle={() => setOutlineOpen((o) => !o)}
         onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         onProviderChange={(p) => saveSettings({ selectedProvider: p })}
         onSettingsOpen={() => setSettingsOpen(true)}
         onDownload={() => page && downloadPageAsMarkdown(page)}
       />
+      {page?.isShort && (
+        <div className="warning-banner">Short content — AI responses may be limited.</div>
+      )}
       <main className="workspace-layout">
-        <ArticlePanel page={page} onAskAI={handleAskAI} />
+        <OutlinePanel items={outlineItems} activeId={outlineActiveId} isOpen={outlineOpen} />
+        <ArticlePanel page={page} onAskAI={handleAskAI} articleBodyRef={articleBodyRef} />
         {chatOpen && (
           <div className="chat-panel-wrapper" style={{ width: chatWidth }}>
             <div className="chat-resize-handle" onMouseDown={handleResizeStart} />
             <ChatPanel
               page={page}
               provider={provider}
+              settings={settings}
+              theme={theme}
               onClose={() => { setChatOpen(false); setPendingAIMessage(null) }}
+              onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onProviderChange={(p) => saveSettings({ selectedProvider: p })}
               onSettingsOpen={() => setSettingsOpen(true)}
+              onDownload={() => page && downloadPageAsMarkdown(page)}
               initialMessage={pendingAIMessage}
             />
           </div>
