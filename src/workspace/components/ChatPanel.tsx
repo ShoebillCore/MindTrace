@@ -3,7 +3,6 @@ import { useStream } from '../hooks/useStream'
 import { useChatHistory } from '../hooks/useChatHistory'
 import type { Message } from '../hooks/useChatHistory'
 import type { AIProvider, CapturedPage, Settings, ProviderName } from '../providers/types'
-import type { Theme } from '../hooks/useTheme'
 import ChatHeader from './ChatHeader'
 import QuickActions from './QuickActions'
 import MessageList from './MessageList'
@@ -16,9 +15,7 @@ interface ChatPanelProps {
   page: CapturedPage | null
   provider: AIProvider | null
   settings: Settings
-  theme: Theme
   onClose: () => void
-  onThemeToggle: () => void
   onProviderChange: (p: ProviderName) => void
   onSettingsOpen: () => void
   onDownload: () => void
@@ -26,8 +23,8 @@ interface ChatPanelProps {
 }
 
 export default function ChatPanel({
-  page, provider, settings, theme,
-  onClose, onThemeToggle, onProviderChange, onSettingsOpen, onDownload,
+  page, provider, settings,
+  onClose, onProviderChange, onSettingsOpen, onDownload,
   initialMessage,
 }: ChatPanelProps) {
   const { messages, addUserMessage, addAssistantMessage, updateMessage, finalizeMessage, setStreamingError } =
@@ -66,7 +63,7 @@ export default function ChatPanel({
     stream.start(CHAT_SYSTEM_PROMPT(page.textContent), text)
   }
 
-  const headerProps = { settings, theme, page, onClose, onThemeToggle, onProviderChange, onSettingsOpen, onDownload }
+  const headerProps = { settings, page, onClose, onProviderChange, onSettingsOpen, onDownload }
 
   if (!provider) {
     return (

@@ -112,17 +112,19 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
 
   return (
     <div className="article-panel">
-      <h1 className="article-title">{page.title}</h1>
-      {(page.byline || page.siteName) && (
-        <p className="article-meta">{[page.byline, page.siteName].filter(Boolean).join(' · ')}</p>
-      )}
-      <div
-        ref={articleBodyRef}
-        className="article-body"
-        dangerouslySetInnerHTML={{ __html: page.content }}
-        onMouseUp={handleMouseUp}
-        onClick={handleBodyClick}
-      />
+      <div className="article-content-wrap">
+        <h1 className="article-title">{page.title}</h1>
+        {(page.byline || page.siteName) && (
+          <p className="article-meta">{[page.byline, page.siteName].filter(Boolean).join(' · ')}</p>
+        )}
+        <div
+          ref={articleBodyRef}
+          className="article-body"
+          dangerouslySetInnerHTML={{ __html: page.content }}
+          onMouseUp={handleMouseUp}
+          onClick={handleBodyClick}
+        />
+      </div>
       {popup && (
         <HighlightPopup
           position={popup.position}

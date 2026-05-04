@@ -1,5 +1,4 @@
 import type { AIProvider, CapturedPage, Settings, ProviderName } from '../providers/types'
-import type { Theme } from '../hooks/useTheme'
 
 const PROVIDERS: { value: ProviderName; label: string }[] = [
   { value: 'claude', label: 'Claude' },
@@ -10,24 +9,19 @@ const PROVIDERS: { value: ProviderName; label: string }[] = [
 interface ChatHeaderProps {
   provider: AIProvider | null
   settings: Settings
-  theme: Theme
   page: CapturedPage | null
   onClose: () => void
-  onThemeToggle: () => void
   onProviderChange: (p: ProviderName) => void
   onSettingsOpen: () => void
   onDownload: () => void
 }
 
 export default function ChatHeader({
-  provider, settings, theme, page,
-  onClose, onThemeToggle, onProviderChange, onSettingsOpen, onDownload,
+  provider, settings, page,
+  onClose, onProviderChange, onSettingsOpen, onDownload,
 }: ChatHeaderProps) {
-  const isDark = theme === 'dark'
-
   return (
     <div className="chat-header">
-      {/* Toolbar row: logo + all controls */}
       <div className="chat-header-toolbar">
         <span className="chat-header-logo"></span>
         <div className="chat-header-controls">
@@ -40,13 +34,6 @@ export default function ChatHeader({
               <option key={p.value} value={p.value}>{p.label}</option>
             ))}
           </select>
-          <button
-            className="theme-toggle"
-            onClick={onThemeToggle}
-            title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-          >
-            <div className="theme-toggle-knob" style={{ left: isDark ? '16px' : '3px' }} />
-          </button>
           <button
             className="download-btn"
             onClick={onDownload}
@@ -65,7 +52,6 @@ export default function ChatHeader({
         </div>
       </div>
 
-      {/* Status row: active provider info */}
       {provider && (
         <div className="chat-header-status">
           <span className="chat-status-dot" />

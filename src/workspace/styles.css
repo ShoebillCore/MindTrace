@@ -1,37 +1,39 @@
+/* GitHub dark — default theme (matches THEMES.github.dark in themes.ts) */
 :root[data-theme='dark'] {
-  --bg-primary: #111111;
-  --bg-secondary: #1a1a1a;
-  --bg-card: #1a1a1a;
-  --bg-hover: #242424;
-  --border: #2e2e2e;
-  --text-primary: #e8e8e8;
-  --text-secondary: #a0a0a0;
-  --text-muted: #585858;
-  --accent-purple: #2ea043;
-  --accent-blue: #2cbcb4;
-  --accent-green: #2ea043;
-  --error: #f87171;
-  --warning-bg: #2a1a0a;
-  --warning-text: #fbbf24;
-  --warning-border: #92400e;
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #161b22;
+  --bg-hover: #21262d;
+  --border: #30363d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --accent-purple: #238636;
+  --accent-blue: #388bfd;
+  --accent-green: #238636;
+  --error: #f85149;
+  --warning-bg: #2d1b00;
+  --warning-text: #d29922;
+  --warning-border: #9e6a03;
 }
 
+/* GitHub light — matches THEMES.github.light in themes.ts */
 :root[data-theme='light'] {
-  --bg-primary: #fafafa;
-  --bg-secondary: #ffffff;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
   --bg-card: #ffffff;
-  --bg-hover: #f0f0f0;
-  --border: #e0e0e0;
-  --text-primary: #1a1a1a;
-  --text-secondary: #4a4a4a;
-  --text-muted: #9a9a9a;
-  --accent-purple: #166534;
-  --accent-blue: #1a8a84;
-  --accent-green: #166534;
-  --error: #dc2626;
-  --warning-bg: #fef3c7;
-  --warning-text: #92400e;
-  --warning-border: #fcd34d;
+  --bg-hover: #f3f4f6;
+  --border: #d0d7de;
+  --text-primary: #1f2328;
+  --text-secondary: #656d76;
+  --text-muted: #9198a1;
+  --accent-purple: #1a7f37;
+  --accent-blue: #0969da;
+  --accent-green: #1a7f37;
+  --error: #cf222e;
+  --warning-bg: #fff8c5;
+  --warning-text: #9a6700;
+  --warning-border: #d4a72c;
 }
 
 *,
@@ -172,6 +174,178 @@ body {
   color: var(--text-secondary);
 }
 
+/* ── Reader settings button ────────────────── */
+
+.reader-settings-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.reader-settings-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.reader-settings-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Reader settings popup ─────────────────── */
+
+.reader-settings-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.22);
+  width: 260px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.reader-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reader-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reader-settings-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.reader-step-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reader-step-btn {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  transition: background 0.12s, color 0.12s;
+  line-height: 1.4;
+}
+
+.reader-step-btn:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.reader-step-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  min-width: 38px;
+  text-align: center;
+}
+
+.reader-mode-pill {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.reader-mode-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: background 0.12s, color 0.12s;
+}
+
+.reader-mode-btn.active {
+  background: var(--accent-green);
+  color: #fff;
+}
+
+.reader-mode-btn:not(.active):hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.theme-swatches {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.theme-swatch-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.theme-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s, outline 0.12s;
+}
+
+.theme-swatch:hover {
+  transform: scale(1.15);
+}
+
+.theme-swatch.active {
+  outline: 2px solid var(--accent-green);
+  outline-offset: 2px;
+}
+
+.theme-swatch-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+  max-width: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reader-theme-select {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
 /* ── Layout ────────────────────────────────── */
 
 .workspace-layout {
@@ -291,8 +465,14 @@ body {
   margin-bottom: 24px;
 }
 
+.article-content-wrap {
+  max-width: var(--content-width, 50%);
+  margin: 0 auto;
+  width: 100%;
+}
+
 .article-body {
-  font-size: 15px;
+  font-size: var(--article-font-size, 15px);
   line-height: 1.7;
   color: var(--text-secondary);
 }

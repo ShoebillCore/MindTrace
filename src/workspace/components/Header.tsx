@@ -1,16 +1,19 @@
+import { useState, useRef, useEffect } from 'react'
 import type { CapturedPage, Settings, ProviderName } from '../providers/types'
-import type { Theme } from '../hooks/useTheme'
+import type { ReaderSettings } from '../hooks/useReaderSettings'
+import ReaderSettingsPopup from './ReaderSettingsPopup'
 
 interface HeaderProps {
   page: CapturedPage | null
   settings: Settings
-  theme: Theme
   outlineOpen: boolean
+  hasOutline: boolean
   onOutlineToggle: () => void
-  onThemeToggle: () => void
   onProviderChange: (p: ProviderName) => void
   onSettingsOpen: () => void
   onDownload: () => void
+  readerSettings: ReaderSettings
+  onReaderSettingsChange: (next: Partial<ReaderSettings>) => void
 }
 
 const PROVIDERS: { value: ProviderName; label: string }[] = [
@@ -22,23 +25,36 @@ const PROVIDERS: { value: ProviderName; label: string }[] = [
 export default function Header({
   page,
   settings,
-  theme,
   outlineOpen,
+  hasOutline,
   onOutlineToggle,
-  onThemeToggle,
   onProviderChange,
   onSettingsOpen,
   onDownload,
+  readerSettings,
+  onReaderSettingsChange,
 }: HeaderProps) {
-  const isDark = theme === 'dark'
+  const [popupOpen, setPopupOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!popupOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setPopupOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [popupOpen])
 
   return (
     <header className="header">
       <div className="header-left">
+        {hasOutline && (
         <button
           className="outline-toggle-btn"
           onClick={onOutlineToggle}
-          disabled={!page}
           title={outlineOpen ? 'Hide outline' : 'Show outline'}
           aria-label="Toggle outline panel"
         >
@@ -50,7 +66,9 @@ export default function Header({
             <line x1="3" y1="12" x2="3" y2="12" strokeWidth="2" />
           </svg>
         </button>
+        )}
       </div>
+
       <div className="header-right">
         <select
           className="provider-select"
@@ -58,22 +76,27 @@ export default function Header({
           onChange={(e) => onProviderChange(e.target.value as ProviderName)}
         >
           {PROVIDERS.map((p) => (
-            <option key={p.value} value={p.value}>
-              {p.label}
-            </option>
+            <option key={p.value} value={p.value}>{p.label}</option>
           ))}
         </select>
 
-        <button
-          className="theme-toggle"
-          onClick={onThemeToggle}
-          title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-        >
-          <div
-            className="theme-toggle-knob"
-            style={{ left: isDark ? '16px' : '3px' }}
-          />
-        </button>
+        <div ref={containerRef} style={{ position: 'relative' }}>
+          <button
+            className="reader-settings-btn"
+            onClick={() => setPopupOpen((o) => !o)}
+            disabled={!page}
+            title="Reading settings"
+            aria-label="Reading settings"
+          >
+            Aa
+          </button>
+          {popupOpen && (
+            <ReaderSettingsPopup
+              settings={readerSettings}
+              onChange={onReaderSettingsChange}
+            />
+          )}
+        </div>
 
         <button
           className="download-btn"

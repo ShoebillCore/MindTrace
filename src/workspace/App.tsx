@@ -1,6 +1,6 @@
 // src/workspace/App.tsx
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useTheme } from './hooks/useTheme'
+import { useReaderSettings } from './hooks/useReaderSettings'
 import { useSettings } from './hooks/useSettings'
 import { useOutline } from './hooks/useOutline'
 import { createClaudeProvider } from './providers/claude'
@@ -23,7 +23,7 @@ function getProvider(name: string, apiKey: string): AIProvider {
 }
 
 export default function App() {
-  const { theme, setTheme } = useTheme()
+  const { readerSettings, updateReaderSettings, loaded: readerLoaded } = useReaderSettings()
   const { settings, saveSettings, loaded: settingsLoaded } = useSettings()
   const [page, setPage] = useState<CapturedPage | null>(null)
   const [pageLoaded, setPageLoaded] = useState(false)
@@ -104,7 +104,7 @@ export default function App() {
     }
   }, [])
 
-  if (!pageLoaded || !settingsLoaded) {
+  if (!pageLoaded || !settingsLoaded || !readerLoaded) {
     return <div className="loading">Loading…</div>
   }
 
@@ -114,17 +114,18 @@ export default function App() {
     : null
 
   return (
-    <div className="app" data-theme={theme}>
+    <div className="app">
       <Header
         page={page}
         settings={settings}
-        theme={theme}
         outlineOpen={outlineOpen}
+        hasOutline={outlineItems.length > 0}
         onOutlineToggle={() => setOutlineOpen((o) => !o)}
-        onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         onProviderChange={(p) => saveSettings({ selectedProvider: p })}
         onSettingsOpen={() => setSettingsOpen(true)}
         onDownload={() => page && downloadPageAsMarkdown(page)}
+        readerSettings={readerSettings}
+        onReaderSettingsChange={updateReaderSettings}
       />
       {page?.isShort && (
         <div className="warning-banner">Short content — AI responses may be limited.</div>
@@ -139,9 +140,7 @@ export default function App() {
               page={page}
               provider={provider}
               settings={settings}
-              theme={theme}
               onClose={() => { setChatOpen(false); setPendingAIMessage(null) }}
-              onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               onProviderChange={(p) => saveSettings({ selectedProvider: p })}
               onSettingsOpen={() => setSettingsOpen(true)}
               onDownload={() => page && downloadPageAsMarkdown(page)}
