@@ -21,7 +21,8 @@ interface PopupState {
 interface TimelineMarker {
   id: string
   color: string
-  top: number  // 0–1 fraction of scroll height
+  top: number     // 0–1 fraction of scroll height
+  preview: string // truncated quote for tooltip
 }
 
 const HL_COLORS: Record<HighlightColor, string> = {
@@ -94,7 +95,10 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
       const elRect = el.getBoundingClientRect()
       const absoluteTop = elRect.top - areaRect.top + area.scrollTop
       const fraction = Math.max(0.01, Math.min(0.99, absoluteTop / area.scrollHeight))
-      markers.push({ id: hl.id, color: HL_COLORS[hl.color], top: fraction })
+      const preview = hl.quote.length > 46
+        ? hl.quote.slice(0, 46).trimEnd() + '…'
+        : hl.quote
+      markers.push({ id: hl.id, color: HL_COLORS[hl.color], top: fraction, preview })
     }
     setTimelineMarkers(markers)
   }, [highlights, page])
@@ -213,9 +217,10 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
               className="article-timeline-dot"
               style={{ top: `${m.top * 100}%`, background: m.color }}
               onClick={() => handleTimelineClick(m.id)}
-              title="Jump to highlight"
-              aria-label="Jump to highlight"
-            />
+              aria-label={`Jump to highlight: ${m.preview}`}
+            >
+              <span className="timeline-tooltip">{m.preview}</span>
+            </button>
           ))}
         </div>
       )}
