@@ -1,8 +1,26 @@
-export type ColorScheme = 'github' | 'catppuccin' | 'rose-pine' | 'flexoki' | 'ayu' | 'gruvbox' | 'penumbra'
+export type ColorScheme = 'default' | 'github' | 'catppuccin' | 'rose-pine' | 'flexoki' | 'ayu' | 'gruvbox' | 'penumbra'
 export type Mode = 'dark' | 'light'
 export type ThemeTokens = Record<string, string>
 
 export const THEMES: Record<ColorScheme, Record<Mode, ThemeTokens>> = {
+  default: {
+    light: {
+      '--bg-primary': '#fdfcfc', '--bg-secondary': '#f8f7f7', '--bg-card': '#f8f7f7',
+      '--bg-hover': '#f1eeee', '--border': 'rgba(15,0,0,0.12)',
+      '--text-primary': '#201d1d', '--text-secondary': '#424245', '--text-muted': '#646262',
+      '--accent-green': '#30d158', '--accent-blue': '#007aff', '--accent-purple': '#201d1d',
+      '--error': '#ff3b30',
+      '--warning-bg': '#fff3cd', '--warning-text': '#9a6700', '--warning-border': '#cc7f08',
+    },
+    dark: {
+      '--bg-primary': '#201d1d', '--bg-secondary': '#302c2c', '--bg-card': '#302c2c',
+      '--bg-hover': '#3d3838', '--border': 'rgba(253,252,252,0.1)',
+      '--text-primary': '#fdfcfc', '--text-secondary': '#c4c2c2', '--text-muted': '#9a9898',
+      '--accent-green': '#30d158', '--accent-blue': '#007aff', '--accent-purple': '#fdfcfc',
+      '--error': '#ff3b30',
+      '--warning-bg': '#2a1a00', '--warning-text': '#ff9f0a', '--warning-border': '#cc7f08',
+    },
+  },
   github: {
     dark: {
       '--bg-primary': '#0d1117', '--bg-secondary': '#161b22', '--bg-card': '#161b22',
@@ -132,6 +150,7 @@ export const THEMES: Record<ColorScheme, Record<Mode, ThemeTokens>> = {
 }
 
 export const THEME_META: { id: ColorScheme; label: string; darkBg: string; accent: string }[] = [
+  { id: 'default',    label: 'Default',   darkBg: '#201d1d', accent: '#30d158' },
   { id: 'github',     label: 'GitHub',    darkBg: '#0d1117', accent: '#238636' },
   { id: 'catppuccin', label: 'Catppuccin',darkBg: '#1e1e2e', accent: '#a6e3a1' },
   { id: 'rose-pine',  label: 'Rosé Pine', darkBg: '#191724', accent: '#31748f' },

@@ -12,7 +12,7 @@ export interface ReaderSettings {
 }
 
 const DEFAULT: ReaderSettings = {
-  colorScheme: 'github',
+  colorScheme: 'default',
   mode: 'light',
   fontSize: 15,
   contentWidth: 50,

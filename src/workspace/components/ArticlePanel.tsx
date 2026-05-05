@@ -1,5 +1,5 @@
 // src/workspace/components/ArticlePanel.tsx
-import { useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CapturedPage } from '../providers/types'
 import { useHighlights } from '../hooks/useHighlights'
 import type { HighlightColor } from '../hooks/useHighlights'
@@ -18,6 +18,20 @@ interface PopupState {
   highlightId?: string
 }
 
+interface TimelineMarker {
+  id: string
+  color: string
+  top: number  // 0–1 fraction of scroll height
+}
+
+const HL_COLORS: Record<HighlightColor, string> = {
+  yellow: '#facc15',
+  green:  '#4ade80',
+  blue:   '#60a5fa',
+  pink:   '#f472b4',
+  purple: '#a78bfa',
+}
+
 function popupPosition(rect: DOMRect): { top: number; left: number } {
   return {
     top: rect.top + window.scrollY - 44,
@@ -30,19 +44,20 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
     page?.url ?? '',
   )
   const [popup, setPopup] = useState<PopupState | null>(null)
+  const [timelineMarkers, setTimelineMarkers] = useState<TimelineMarker[]>([])
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
+  // Apply highlight spans to the DOM
   useLayoutEffect(() => {
     const body = articleBodyRef.current
     if (!body) return
 
-    // Remove all existing highlight spans (unwrap)
     body.querySelectorAll('[data-highlight-id]').forEach((span) => {
       const parent = span.parentNode!
       while (span.firstChild) parent.insertBefore(span.firstChild, span)
       parent.removeChild(span)
     })
 
-    // Re-apply each highlight via TreeWalker text search
     for (const hl of highlights) {
       const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT)
       let node: Text | null
@@ -63,6 +78,37 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
       }
     }
   }, [highlights, page])
+
+  // Measure highlight positions after spans are in DOM
+  useEffect(() => {
+    const area = scrollAreaRef.current
+    if (!area || highlights.length === 0) {
+      setTimelineMarkers([])
+      return
+    }
+    const areaRect = area.getBoundingClientRect()
+    const markers: TimelineMarker[] = []
+    for (const hl of highlights) {
+      const el = area.querySelector(`[data-highlight-id="${hl.id}"]`) as HTMLElement | null
+      if (!el) continue
+      const elRect = el.getBoundingClientRect()
+      const absoluteTop = elRect.top - areaRect.top + area.scrollTop
+      const fraction = Math.max(0.01, Math.min(0.99, absoluteTop / area.scrollHeight))
+      markers.push({ id: hl.id, color: HL_COLORS[hl.color], top: fraction })
+    }
+    setTimelineMarkers(markers)
+  }, [highlights, page])
+
+  const handleTimelineClick = (id: string) => {
+    const area = scrollAreaRef.current
+    if (!area) return
+    const el = area.querySelector(`[data-highlight-id="${id}"]`) as HTMLElement | null
+    if (!el) return
+    const elRect = el.getBoundingClientRect()
+    const areaRect = area.getBoundingClientRect()
+    const target = area.scrollTop + (elRect.top - areaRect.top) - area.clientHeight / 2 + el.clientHeight / 2
+    area.scrollTo({ top: Math.max(0, target), behavior: 'smooth' })
+  }
 
   const handleMouseUp = () => {
     const sel = window.getSelection()
@@ -105,53 +151,73 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
   if (!page) {
     return (
       <div className="article-panel">
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No article captured.</p>
+        <div className="article-scroll-area">
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No article captured.</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="article-panel">
-      <div className="article-content-wrap">
-        <h1 className="article-title">{page.title}</h1>
-        {(page.byline || page.siteName) && (
-          <p className="article-meta">{[page.byline, page.siteName].filter(Boolean).join(' · ')}</p>
+      <div className="article-scroll-area" ref={scrollAreaRef}>
+        <div className="article-content-wrap">
+          <h1 className="article-title">{page.title}</h1>
+          {(page.byline || page.siteName) && (
+            <p className="article-meta">{[page.byline, page.siteName].filter(Boolean).join(' · ')}</p>
+          )}
+          <div
+            ref={articleBodyRef}
+            className="article-body"
+            dangerouslySetInnerHTML={{ __html: page.content }}
+            onMouseUp={handleMouseUp}
+            onClick={handleBodyClick}
+          />
+        </div>
+        {popup && (
+          <HighlightPopup
+            position={popup.position}
+            mode={popup.mode}
+            quote={popup.quote}
+            onColorSelect={handleColorSelect}
+            onCopy={
+              popup.mode === 'new' && popup.quote
+                ? () => {
+                    navigator.clipboard.writeText(popup.quote!)
+                    window.getSelection()?.removeAllRanges()
+                    setPopup(null)
+                  }
+                : undefined
+            }
+            onAskAI={
+              popup.mode === 'new' && popup.quote && onAskAI
+                ? () => {
+                    onAskAI(popup.quote!)
+                    window.getSelection()?.removeAllRanges()
+                    setPopup(null)
+                  }
+                : undefined
+            }
+            onDelete={popup.mode === 'edit' ? handleDelete : undefined}
+            onDismiss={() => setPopup(null)}
+          />
         )}
-        <div
-          ref={articleBodyRef}
-          className="article-body"
-          dangerouslySetInnerHTML={{ __html: page.content }}
-          onMouseUp={handleMouseUp}
-          onClick={handleBodyClick}
-        />
       </div>
-      {popup && (
-        <HighlightPopup
-          position={popup.position}
-          mode={popup.mode}
-          quote={popup.quote}
-          onColorSelect={handleColorSelect}
-          onCopy={
-            popup.mode === 'new' && popup.quote
-              ? () => {
-                  navigator.clipboard.writeText(popup.quote!)
-                  window.getSelection()?.removeAllRanges()
-                  setPopup(null)
-                }
-              : undefined
-          }
-          onAskAI={
-            popup.mode === 'new' && popup.quote && onAskAI
-              ? () => {
-                  onAskAI(popup.quote!)
-                  window.getSelection()?.removeAllRanges()
-                  setPopup(null)
-                }
-              : undefined
-          }
-          onDelete={popup.mode === 'edit' ? handleDelete : undefined}
-          onDismiss={() => setPopup(null)}
-        />
+
+      {timelineMarkers.length > 0 && (
+        <div className="article-timeline" aria-hidden="true">
+          <div className="article-timeline-track" />
+          {timelineMarkers.map((m) => (
+            <button
+              key={m.id}
+              className="article-timeline-dot"
+              style={{ top: `${m.top * 100}%`, background: m.color }}
+              onClick={() => handleTimelineClick(m.id)}
+              title="Jump to highlight"
+              aria-label="Jump to highlight"
+            />
+          ))}
+        </div>
       )}
     </div>
   )
