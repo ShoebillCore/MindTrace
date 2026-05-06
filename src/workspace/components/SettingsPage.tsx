@@ -218,7 +218,7 @@ function ReaderSection({
       <div className="sp-section-title">Reading Display</div>
 
       <div className="sp-step-row">
-        <span className="sp-field-label" style={{ margin: 0 }}>Font Size</span>
+        <span className="sp-step-label">Font Size</span>
         <div className="sp-step-group">
           <button
             className="sp-step-btn"
@@ -233,7 +233,7 @@ function ReaderSection({
       </div>
 
       <div className="sp-step-row">
-        <span className="sp-field-label" style={{ margin: 0 }}>Content Width</span>
+        <span className="sp-step-label">Content Width</span>
         <div className="sp-step-group">
           <button
             className="sp-step-btn"
@@ -366,15 +366,13 @@ function GeneralSection({
       <div className="sp-field-label">Download Folder</div>
       {folderName ? (
         <div className="sp-folder-set">
-          <span className="sp-folder-name" title={folderName}>[{folderName}]</span>
-          <div className="sp-folder-actions">
-            <button className="sp-folder-btn" onClick={onChooseFolder} disabled={folderPending}>
-              Change
-            </button>
-            <button className="sp-folder-btn sp-folder-btn--clear" onClick={onClearFolder}>
-              Clear
-            </button>
-          </div>
+          <span className="sp-folder-name" title={folderName}>{folderName}</span>
+          <button className="sp-folder-btn" onClick={onChooseFolder} disabled={folderPending}>
+            Change
+          </button>
+          <button className="sp-folder-btn sp-folder-btn--clear" onClick={onClearFolder}>
+            Clear
+          </button>
         </div>
       ) : (
         <div className="sp-folder-unset">
