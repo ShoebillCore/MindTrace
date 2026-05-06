@@ -12,134 +12,99 @@ const COLORS: { color: HighlightColor; hex: string }[] = [
 
 interface HighlightPopupProps {
   position: { top: number; left: number }
-  mode: 'new' | 'edit'
-  quote?: string
-  initialComment?: string
-  defaultColor?: HighlightColor
-  onColorSelect: (color: HighlightColor, comment: string) => void
-  onCopy?: () => void
-  onAskAI?: () => void
-  onDelete?: () => void
-  onSaveComment?: (comment: string) => void
+  currentColor: HighlightColor
+  note?: string
+  onColorChange: (color: HighlightColor) => void
+  onNoteSave: (note: string) => void
+  onDelete: () => void
   onDismiss: () => void
 }
 
 export default function HighlightPopup({
-  position,
-  mode,
-  quote,
-  defaultColor,
-  onColorSelect,
-  onCopy,
-  onAskAI,
-  onDelete,
-  onSaveComment,
-  onDismiss,
-  initialComment = '',
+  position, currentColor, note,
+  onColorChange, onNoteSave, onDelete, onDismiss,
 }: HighlightPopupProps) {
-  const [comment, setComment] = useState(initialComment)
-  const commentRef = useRef(comment)
-  useEffect(() => { commentRef.current = comment }, [comment])
-
-  // Show textarea open if there's already a comment, collapsed otherwise
-  const [commentOpen, setCommentOpen] = useState(initialComment.trim().length > 0)
+  const [noteOpen, setNoteOpen] = useState(false)
+  const [noteValue, setNoteValue] = useState(note ?? '')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (commentOpen && textareaRef.current) {
+    if (noteOpen && textareaRef.current) {
       textareaRef.current.focus()
     }
-  }, [commentOpen])
+  }, [noteOpen])
 
-  const quotePreview = quote
-    ? (quote.length > 54 ? quote.slice(0, 54).trimEnd() + '…' : quote)
-    : null
-
-  const hasComment = comment.trim().length > 0
+  const notePreview = note && note.length > 60
+    ? note.slice(0, 60).trimEnd() + '…'
+    : note
 
   return createPortal(
     <>
       <div className="highlight-popup-backdrop" onMouseDown={onDismiss} />
+      <div className="highlight-popup" style={{ top: position.top, left: position.left }}>
 
-      <div
-        className="highlight-popup"
-        style={{ top: position.top, left: position.left }}
-      >
-        {/* Selected text preview (new mode only) */}
-        {mode === 'new' && quotePreview && (
-          <div className="popup-quote-preview">"{quotePreview}"</div>
-        )}
-
-        {/* Color dots + action icons */}
-        <div className="highlight-popup-row">
+        {/* Color row */}
+        <div className="popup-color-row">
           {COLORS.map(({ color, hex }) => (
             <button
               key={color}
-              className={`highlight-color-dot${mode === 'new' && defaultColor === color ? ' default' : ''}`}
+              className={`pp-dot${color === currentColor ? ' pp-dot--active' : ''}`}
               style={{ background: hex }}
-              onClick={() => onColorSelect(color, commentRef.current)}
-              aria-label={`Highlight ${color}`}
+              onClick={() => onColorChange(color)}
+              aria-label={`Change to ${color}`}
             />
           ))}
-
-          <span className="highlight-popup-spacer" />
-
-          {mode === 'new' && onCopy && (
-            <button className="popup-icon-btn" onClick={onCopy} title="Copy">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="0.5" y="3.5" width="9" height="9" rx="1"/>
-                <path d="M3.5 3.5V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H10"/>
-              </svg>
-            </button>
-          )}
-          {mode === 'new' && onAskAI && (
-            <button className="popup-icon-btn" onClick={onAskAI} title="Ask AI">AI</button>
-          )}
-          {mode === 'edit' && onDelete && (
-            <button className="popup-icon-btn popup-icon-btn--delete" onClick={onDelete} title="Delete highlight">✕</button>
-          )}
+          <div className="popup-spacer" />
+          <button className="popup-clear-btn" onClick={onDelete}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+            </svg>
+            Clear
+          </button>
         </div>
 
-        <div className="highlight-popup-sep" />
+        <div className="popup-divider" />
 
         {/* Note section */}
-        {commentOpen ? (
+        {noteOpen ? (
           <>
             <textarea
               ref={textareaRef}
-              className="highlight-comment-input"
+              className="popup-note-textarea"
               placeholder="Add a note…"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              value={noteValue}
+              onChange={(e) => setNoteValue(e.target.value)}
               rows={2}
             />
-            {hasComment && (
-              <div className="highlight-popup-actions">
-                <button className="popup-action-btn" onClick={() => setComment('')}>
-                  Clear
-                </button>
-                {mode === 'new' && (
-                  <button
-                    className="popup-action-btn popup-action-btn--save"
-                    onClick={() => onColorSelect(defaultColor ?? 'yellow', commentRef.current)}
-                  >
-                    Save
-                  </button>
-                )}
-                {mode === 'edit' && onSaveComment && (
-                  <button
-                    className="popup-action-btn popup-action-btn--save"
-                    onClick={() => { onSaveComment(commentRef.current); onDismiss() }}
-                  >
-                    Save
-                  </button>
-                )}
-              </div>
-            )}
+            <div className="popup-note-actions">
+              <button
+                className="popup-note-btn"
+                onClick={() => { setNoteOpen(false); setNoteValue(note ?? '') }}
+              >
+                Cancel
+              </button>
+              <button
+                className="popup-note-btn popup-note-btn--save"
+                onClick={() => onNoteSave(noteValue)}
+              >
+                Save
+              </button>
+            </div>
           </>
+        ) : note ? (
+          <div className="popup-note-text" onClick={() => setNoteOpen(true)}>
+            {notePreview}
+            <span className="popup-note-badge">tap to edit</span>
+          </div>
         ) : (
-          <button className="popup-add-note-btn" onClick={() => setCommentOpen(true)}>
-            + Add note
+          <button className="popup-note-add" onClick={() => setNoteOpen(true)}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add note
           </button>
         )}
       </div>
