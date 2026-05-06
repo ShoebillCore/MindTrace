@@ -1,24 +1,28 @@
 // src/workspace/App.tsx
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useReaderSettings } from './hooks/useReaderSettings'
+import type { ReaderSettings } from './hooks/useReaderSettings'
 import { useSettings } from './hooks/useSettings'
 import { useOutline } from './hooks/useOutline'
 import { createClaudeProvider } from './providers/claude'
 import { createOpenAIProvider } from './providers/openai'
 import { createGeminiProvider } from './providers/gemini'
-import type { AIProvider, CapturedPage } from './providers/types'
+import { createDeepseekProvider } from './providers/deepseek'
+import type { AIProvider, CapturedPage, ProviderName } from './providers/types'
+import type { HighlightColor } from './hooks/useHighlights'
 import { downloadPageAsMarkdown } from './utils/htmlToMarkdown'
 import ArticlePanel from './components/ArticlePanel'
 import ChatPanel from './components/ChatPanel'
-import SettingsDrawer from './components/SettingsDrawer'
+import SettingsPage from './components/SettingsPage'
 import OutlinePanel from './components/OutlinePanel'
 import Header from './components/Header'
 
 function getProvider(name: string, apiKey: string): AIProvider {
   switch (name) {
-    case 'openai': return createOpenAIProvider(apiKey)
-    case 'gemini': return createGeminiProvider(apiKey)
-    default:       return createClaudeProvider(apiKey)
+    case 'openai':   return createOpenAIProvider(apiKey)
+    case 'gemini':   return createGeminiProvider(apiKey)
+    case 'deepseek': return createDeepseekProvider(apiKey)
+    default:         return createClaudeProvider(apiKey)
   }
 }
 
@@ -28,12 +32,22 @@ export default function App() {
   const [page, setPage] = useState<CapturedPage | null>(null)
   const [pageLoaded, setPageLoaded] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [defaultHighlightColor, setDefaultHighlightColor] = useState<HighlightColor>('yellow')
+  const readerSnapshot = useRef<ReaderSettings | null>(null)
   const [chatOpen, setChatOpen] = useState(false)
   const [pendingAIMessage, setPendingAIMessage] = useState<string | null>(null)
   const [chatWidth, setChatWidth] = useState(340)
   const chatWidthRef = useRef(340)
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    chrome.storage.local.get('defaultHighlightColor').then((data) => {
+      if (data.defaultHighlightColor) {
+        setDefaultHighlightColor(data.defaultHighlightColor as HighlightColor)
+      }
+    })
+  }, [])
 
   const showToast = (msg: string, ms = 2500) => {
     if (toastTimer.current) clearTimeout(toastTimer.current)
@@ -135,16 +149,37 @@ export default function App() {
     ? getProvider(settings.selectedProvider, currentKey)
     : null
 
+  const handleSettingsOpen = () => {
+    readerSnapshot.current = readerSettings
+    setSettingsOpen(true)
+  }
+
+  const handleSettingsCancel = () => {
+    if (readerSnapshot.current) {
+      updateReaderSettings(readerSnapshot.current)
+    }
+    setSettingsOpen(false)
+  }
+
+  const handleSettingsSave = (
+    apiKeys: Record<ProviderName, string>,
+    selectedProvider: ProviderName,
+    color: HighlightColor,
+  ) => {
+    saveSettings({ apiKeys, selectedProvider })
+    setDefaultHighlightColor(color)
+    chrome.storage.local.set({ defaultHighlightColor: color })
+    setSettingsOpen(false)
+  }
+
   return (
     <div className="app">
       <Header
         page={page}
-        settings={settings}
         outlineOpen={outlineOpen}
         hasOutline={outlineItems.length > 0}
         onOutlineToggle={() => setOutlineOpen((o) => !o)}
-        onProviderChange={(p) => saveSettings({ selectedProvider: p })}
-        onSettingsOpen={() => setSettingsOpen(true)}
+        onSettingsOpen={handleSettingsOpen}
         onDownload={handleDownload}
         onOpenClaude={handleOpenClaude}
         readerSettings={readerSettings}
@@ -155,7 +190,12 @@ export default function App() {
       )}
       <main className="workspace-layout">
         <OutlinePanel items={outlineItems} activeId={outlineActiveId} isOpen={outlineOpen} />
-        <ArticlePanel page={page} onAskAI={handleAskAI} articleBodyRef={articleBodyRef} />
+        <ArticlePanel
+          page={page}
+          onAskAI={handleAskAI}
+          articleBodyRef={articleBodyRef}
+          defaultHighlightColor={defaultHighlightColor}
+        />
         {chatOpen && (
           <div className="chat-panel-wrapper" style={{ width: chatWidth }}>
             <div className="chat-resize-handle" onMouseDown={handleResizeStart} />
@@ -164,9 +204,7 @@ export default function App() {
               provider={provider}
               settings={settings}
               onClose={() => { setChatOpen(false); setPendingAIMessage(null) }}
-              onProviderChange={(p) => saveSettings({ selectedProvider: p })}
-              onSettingsOpen={() => setSettingsOpen(true)}
-              onDownload={handleDownload}
+              onSettingsOpen={handleSettingsOpen}
               initialMessage={pendingAIMessage}
             />
           </div>
@@ -183,10 +221,13 @@ export default function App() {
       )}
       {toast && <div className="claude-toast">{toast}</div>}
       {settingsOpen && (
-        <SettingsDrawer
+        <SettingsPage
           settings={settings}
-          onSave={(apiKeys) => saveSettings({ apiKeys })}
-          onClose={() => setSettingsOpen(false)}
+          readerSettings={readerSettings}
+          defaultHighlightColor={defaultHighlightColor}
+          onReaderChange={updateReaderSettings}
+          onSave={handleSettingsSave}
+          onCancel={handleSettingsCancel}
         />
       )}
     </div>

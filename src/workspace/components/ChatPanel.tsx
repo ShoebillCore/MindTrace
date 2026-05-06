@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useStream } from '../hooks/useStream'
 import { useChatHistory } from '../hooks/useChatHistory'
 import type { Message } from '../hooks/useChatHistory'
-import type { AIProvider, CapturedPage, Settings, ProviderName } from '../providers/types'
+import type { AIProvider, CapturedPage, Settings } from '../providers/types'
 import ChatHeader from './ChatHeader'
 import QuickActions from './QuickActions'
 import MessageList from './MessageList'
@@ -16,15 +16,13 @@ interface ChatPanelProps {
   provider: AIProvider | null
   settings: Settings
   onClose: () => void
-  onProviderChange: (p: ProviderName) => void
   onSettingsOpen: () => void
-  onDownload: () => void
   initialMessage?: string | null
 }
 
 export default function ChatPanel({
   page, provider, settings,
-  onClose, onProviderChange, onSettingsOpen, onDownload,
+  onClose, onSettingsOpen,
   initialMessage,
 }: ChatPanelProps) {
   const { messages, addUserMessage, addAssistantMessage, updateMessage, finalizeMessage, setStreamingError } =
@@ -63,7 +61,7 @@ export default function ChatPanel({
     stream.start(CHAT_SYSTEM_PROMPT(page.textContent), text)
   }
 
-  const headerProps = { settings, page, onClose, onProviderChange, onSettingsOpen, onDownload }
+  const headerProps = { provider, onClose }
 
   if (!provider) {
     return (
