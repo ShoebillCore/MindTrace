@@ -1,9 +1,17 @@
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import type { Message } from '../hooks/useChatHistory'
+
+marked.use({ gfm: true, breaks: true })
 
 const LABEL_COLORS: Record<string, string> = {
   Summary: '#0060cc',
   'Deep Insight': '#6d28d9',
   Questions: '#15803d',
+}
+
+function renderMarkdown(content: string): string {
+  return DOMPurify.sanitize(marked.parse(content) as string)
 }
 
 export default function ChatMessage({ message }: { message: Message }) {
@@ -32,7 +40,10 @@ export default function ChatMessage({ message }: { message: Message }) {
           <div className="skeleton-line" style={{ width: '83%' }} />
         </div>
       ) : (
-        <p className="chat-message-content">{message.content}</p>
+        <div
+          className="chat-md"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }}
+        />
       )}
     </div>
   )
