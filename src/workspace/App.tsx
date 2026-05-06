@@ -32,7 +32,14 @@ export default function App() {
   const [pendingAIMessage, setPendingAIMessage] = useState<string | null>(null)
   const [chatWidth, setChatWidth] = useState(340)
   const chatWidthRef = useRef(340)
-  const [claudeToast, setClaudeToast] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const showToast = (msg: string, ms = 2500) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    setToast(msg)
+    toastTimer.current = setTimeout(() => setToast(null), ms)
+  }
   const articleBodyRef = useRef<HTMLDivElement>(null)
   const [outlineOpen, setOutlineOpen] = useState(true)
   const { items: outlineItems, activeId: outlineActiveId } = useOutline(articleBodyRef, page)
@@ -41,9 +48,14 @@ export default function App() {
     if (!page) return
     const prompt = `I'm reading an article and want to discuss it with you.\n\nTitle: ${page.title}\nSource: ${page.url}\n\n---\n\n${page.textContent.slice(0, 6000)}`
     navigator.clipboard.writeText(prompt)
-    setClaudeToast(true)
-    setTimeout(() => setClaudeToast(false), 3500)
+    showToast('Article copied — paste into Claude to start', 3500)
     chrome.windows.create({ url: 'https://claude.ai', type: 'popup', width: 520, height: 900 })
+  }
+
+  const handleDownload = async () => {
+    if (!page) return
+    const savedTo = await downloadPageAsMarkdown(page)
+    if (savedTo) showToast(`Saved to ${savedTo}`)
   }
 
   const handleAskAI = (text: string) => {
@@ -133,7 +145,7 @@ export default function App() {
         onOutlineToggle={() => setOutlineOpen((o) => !o)}
         onProviderChange={(p) => saveSettings({ selectedProvider: p })}
         onSettingsOpen={() => setSettingsOpen(true)}
-        onDownload={() => page && downloadPageAsMarkdown(page)}
+        onDownload={handleDownload}
         onOpenClaude={handleOpenClaude}
         readerSettings={readerSettings}
         onReaderSettingsChange={updateReaderSettings}
@@ -154,7 +166,7 @@ export default function App() {
               onClose={() => { setChatOpen(false); setPendingAIMessage(null) }}
               onProviderChange={(p) => saveSettings({ selectedProvider: p })}
               onSettingsOpen={() => setSettingsOpen(true)}
-              onDownload={() => page && downloadPageAsMarkdown(page)}
+              onDownload={handleDownload}
               initialMessage={pendingAIMessage}
             />
           </div>
@@ -169,9 +181,7 @@ export default function App() {
           [chat]
         </button>
       )}
-      {claudeToast && (
-        <div className="claude-toast">Article copied — paste into Claude to start</div>
-      )}
+      {toast && <div className="claude-toast">{toast}</div>}
       {settingsOpen && (
         <SettingsDrawer
           settings={settings}

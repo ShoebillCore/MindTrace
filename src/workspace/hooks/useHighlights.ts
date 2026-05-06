@@ -7,6 +7,7 @@ export interface Highlight {
   url: string
   quote: string
   color: HighlightColor
+  comment?: string
 }
 
 export function useHighlights(url: string) {
@@ -28,13 +29,13 @@ export function useHighlights(url: string) {
     })
   }
 
-  const addHighlight = (quote: string, color: HighlightColor) => {
-    const h: Highlight = { id: Date.now().toString(), url, quote, color }
+  const addHighlight = (quote: string, color: HighlightColor, comment?: string) => {
+    const h: Highlight = { id: Date.now().toString(), url, quote, color, ...(comment ? { comment } : {}) }
     persist([...highlights, h])
   }
 
-  const updateHighlight = (id: string, color: HighlightColor) => {
-    persist(highlights.map((h) => (h.id === id ? { ...h, color } : h)))
+  const updateHighlight = (id: string, changes: { color?: HighlightColor; comment?: string }) => {
+    persist(highlights.map((h) => (h.id === id ? { ...h, ...changes } : h)))
   }
 
   const removeHighlight = (id: string) => {

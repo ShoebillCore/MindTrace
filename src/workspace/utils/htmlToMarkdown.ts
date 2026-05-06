@@ -1,4 +1,5 @@
 import type { CapturedPage } from '../providers/types'
+import { getFolderHandle } from './folderStore'
 
 function nodeToMarkdown(node: Node): string {
   if (node.nodeType === Node.TEXT_NODE) {
@@ -29,7 +30,6 @@ function nodeToMarkdown(node: Node): string {
       return href ? `[${text}](${href})` : text
     }
     case 'code': {
-      // Inline code only — pre > code is handled by the 'pre' case
       if (el.closest('pre')) return el.textContent ?? ''
       return `\`${children()}\``
     }
@@ -79,28 +79,89 @@ function htmlToMarkdown(html: string): string {
   return nodeToMarkdown(doc.body).trim()
 }
 
-export function downloadPageAsMarkdown(page: CapturedPage): void {
+function buildMarkdown(page: CapturedPage): string {
   const parts: string[] = []
-  parts.push(`# ${page.title}`)
-  parts.push('')
+  parts.push(`# ${page.title}`, '')
   if (page.byline || page.siteName) {
-    const meta = [page.byline, page.siteName].filter(Boolean).join(' · ')
-    parts.push(`*${meta}*`)
-    parts.push('')
+    parts.push(`*${[page.byline, page.siteName].filter(Boolean).join(' · ')}*`, '')
   }
-  parts.push(`Source: ${page.url}`)
-  parts.push('')
-  parts.push('---')
-  parts.push('')
-  parts.push(htmlToMarkdown(page.content))
+  parts.push(`Source: ${page.url}`, '', '---', '', htmlToMarkdown(page.content))
+  return parts.join('\n')
+}
 
-  const blob = new Blob([parts.join('\n')], { type: 'text/markdown;charset=utf-8' })
+function buildFilename(title: string): string {
+  return title.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '') + '.md'
+}
+
+async function writeToFolder(
+  folder: FileSystemDirectoryHandle,
+  filename: string,
+  content: string,
+): Promise<boolean> {
+  try {
+    const perm = await folder.queryPermission({ mode: 'readwrite' })
+    const granted =
+      perm === 'granted' ||
+      (perm === 'prompt' &&
+        (await folder.requestPermission({ mode: 'readwrite' })) === 'granted')
+    if (!granted) return false
+    const file = await folder.getFileHandle(filename, { create: true })
+    const writable = await file.createWritable()
+    await writable.write(content)
+    await writable.close()
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function writeViaPicker(filename: string, content: string): Promise<boolean> {
+  if (!('showSaveFilePicker' in window)) return false
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: filename,
+      types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md'] } }],
+    })
+    const writable = await handle.createWritable()
+    await writable.write(content)
+    await writable.close()
+    return true
+  } catch (err) {
+    if ((err as Error).name === 'AbortError') return true  // user cancelled — not an error
+    return false
+  }
+}
+
+function writeViaAnchor(filename: string, content: string): void {
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${page.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '')}.md`
+  a.download = filename
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
+}
+
+/**
+ * Returns the folder name when the file was written silently to the stored
+ * folder (no native OS feedback), so the caller can show its own toast.
+ * Returns '' for the picker and anchor paths — those already surface feedback
+ * through the OS save dialog or the browser download bar.
+ */
+export async function downloadPageAsMarkdown(page: CapturedPage): Promise<string> {
+  const content = buildMarkdown(page)
+  const filename = buildFilename(page.title)
+
+  // 1. Stored default folder — silent write, caller must show feedback
+  const folder = await getFolderHandle().catch(() => null)
+  if (folder && await writeToFolder(folder, filename, content)) return folder.name
+
+  // 2. Native OS save-file picker — dialog is its own feedback
+  if (await writeViaPicker(filename, content)) return ''
+
+  // 3. Legacy anchor-download — browser download bar is its own feedback
+  writeViaAnchor(filename, content)
+  return ''
 }

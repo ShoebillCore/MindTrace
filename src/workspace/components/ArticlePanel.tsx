@@ -16,13 +16,15 @@ interface PopupState {
   position: { top: number; left: number }
   quote?: string
   highlightId?: string
+  initialComment?: string
 }
 
 interface TimelineMarker {
   id: string
   color: string
-  top: number     // 0–1 fraction of scroll height
-  preview: string // truncated quote for tooltip
+  top: number
+  preview: string
+  comment?: string
 }
 
 const HL_COLORS: Record<HighlightColor, string> = {
@@ -33,11 +35,12 @@ const HL_COLORS: Record<HighlightColor, string> = {
   purple: '#a78bfa',
 }
 
+const POPUP_W = 268
+
 function popupPosition(rect: DOMRect): { top: number; left: number } {
-  return {
-    top: rect.top + window.scrollY - 44,
-    left: rect.left + window.scrollX + rect.width / 2,
-  }
+  const raw = rect.left + rect.width / 2
+  const left = Math.max(POPUP_W / 2 + 8, Math.min(window.innerWidth - POPUP_W / 2 - 8, raw))
+  return { top: rect.bottom + 8, left }
 }
 
 export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticlePanelProps) {
@@ -98,7 +101,7 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
       const preview = hl.quote.length > 46
         ? hl.quote.slice(0, 46).trimEnd() + '…'
         : hl.quote
-      markers.push({ id: hl.id, color: HL_COLORS[hl.color], top: fraction, preview })
+      markers.push({ id: hl.id, color: HL_COLORS[hl.color], top: fraction, preview, comment: hl.comment })
     }
     setTimelineMarkers(markers)
   }, [highlights, page])
@@ -129,22 +132,31 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
   const handleBodyClick = (e: React.MouseEvent) => {
     const target = (e.target as HTMLElement).closest('[data-highlight-id]') as HTMLElement | null
     if (!target) return
+    const id = target.dataset.highlightId
+    const hl = highlights.find((h) => h.id === id)
     const rect = target.getBoundingClientRect()
     setPopup({
       mode: 'edit',
       position: popupPosition(rect),
-      highlightId: target.dataset.highlightId,
+      highlightId: id,
+      initialComment: hl?.comment ?? '',
     })
   }
 
-  const handleColorSelect = (color: HighlightColor) => {
+  const handleColorSelect = (color: HighlightColor, comment: string) => {
     if (popup?.mode === 'new' && popup.quote) {
-      addHighlight(popup.quote, color)
+      addHighlight(popup.quote, color, comment || undefined)
     } else if (popup?.mode === 'edit' && popup.highlightId) {
-      updateHighlight(popup.highlightId, color)
+      updateHighlight(popup.highlightId, { color, comment: comment || undefined })
     }
     window.getSelection()?.removeAllRanges()
     setPopup(null)
+  }
+
+  const handleSaveComment = (comment: string) => {
+    if (popup?.highlightId) {
+      updateHighlight(popup.highlightId, { comment: comment || undefined })
+    }
   }
 
   const handleDelete = () => {
@@ -183,6 +195,7 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
             position={popup.position}
             mode={popup.mode}
             quote={popup.quote}
+            initialComment={popup.initialComment}
             onColorSelect={handleColorSelect}
             onCopy={
               popup.mode === 'new' && popup.quote
@@ -203,6 +216,7 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
                 : undefined
             }
             onDelete={popup.mode === 'edit' ? handleDelete : undefined}
+            onSaveComment={popup.mode === 'edit' ? handleSaveComment : undefined}
             onDismiss={() => setPopup(null)}
           />
         )}
@@ -219,7 +233,14 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
               onClick={() => handleTimelineClick(m.id)}
               aria-label={`Jump to highlight: ${m.preview}`}
             >
-              <span className="timeline-tooltip">{m.preview}</span>
+              <span className="timeline-tooltip">
+                <span className="tooltip-quote">{m.preview}</span>
+                {m.comment && (
+                  <span className="tooltip-comment">
+                    {m.comment.length > 40 ? m.comment.slice(0, 40).trimEnd() + '…' : m.comment}
+                  </span>
+                )}
+              </span>
             </button>
           ))}
         </div>
