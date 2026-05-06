@@ -1494,6 +1494,40 @@ body {
   opacity: 0.88;
 }
 
+/* ── Flash Pill ───────────────────────── */
+
+.hl-flash-pill {
+  position: fixed;
+  z-index: 600;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: #1c1c1e;
+  border-radius: 20px;
+  padding: 5px 10px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.32);
+}
+
+.fp-dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 0.12s;
+}
+
+.fp-dot:hover {
+  transform: scale(1.2);
+}
+
+.fp-dot--active {
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
 /* ── Highlight popup ───────────────────────── */
 
 .highlight-popup-backdrop {
@@ -1507,175 +1541,170 @@ body {
   position: fixed;
   z-index: 500;
   transform: translateX(-50%);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  width: 248px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
   display: flex;
   flex-direction: column;
-  gap: 0;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px;
-  width: 268px;
 }
 
-.popup-quote-preview {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-style: italic;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 8px;
-}
-
-.highlight-popup-row {
+.popup-color-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
-.highlight-popup-spacer {
+.pp-dot {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 0.12s;
+}
+
+.pp-dot:hover {
+  transform: scale(1.18);
+}
+
+.pp-dot--active {
+  border-color: var(--text-primary);
+}
+
+.popup-spacer {
   flex: 1;
 }
 
-.highlight-popup-sep {
+.popup-clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 5px;
+  transition: background 0.12s;
+}
+
+.popup-clear-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.popup-divider {
   height: 1px;
   background: var(--border);
   margin: 8px -10px;
 }
 
-.highlight-color-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-  transition: transform 0.1s;
-}
-
-.highlight-color-dot:hover {
-  border-color: var(--text-primary);
-  transform: scale(1.2);
-}
-
-.popup-icon-btn {
-  height: 22px;
-  min-width: 22px;
-  border-radius: 3px;
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-family: inherit;
-  font-weight: 500;
-  cursor: pointer;
+.popup-note-add {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0 6px;
-  flex-shrink: 0;
-}
-
-.popup-icon-btn:hover {
-  border-color: var(--text-muted);
-  color: var(--text-primary);
-}
-
-.popup-icon-btn--delete {
-  border-color: transparent;
+  gap: 5px;
+  font-size: 11.5px;
+  font-family: inherit;
   color: var(--text-muted);
-  font-size: 12px;
-}
-
-.popup-icon-btn--delete:hover {
-  border-color: var(--error);
-  color: var(--error);
-  background: rgba(255, 59, 48, 0.08);
-}
-
-.popup-add-note-btn {
   background: none;
   border: none;
-  color: var(--text-muted);
-  font-size: 11px;
-  font-family: inherit;
   cursor: pointer;
-  padding: 2px 0;
-  text-align: left;
+  padding: 3px 0;
+  transition: color 0.12s;
 }
 
-.popup-add-note-btn:hover {
+.popup-note-add:hover {
   color: var(--text-secondary);
 }
 
-.highlight-comment-input {
-  width: 100%;
-  resize: none;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 11px;
-  font-family: inherit;
+.popup-note-text {
+  font-size: 12px;
+  color: var(--text-secondary);
   line-height: 1.5;
-  padding: 5px 7px;
-  outline: none;
-  margin-top: 8px;
+  padding: 3px 0;
+  cursor: pointer;
+  transition: color 0.12s;
 }
 
-.highlight-comment-input:focus {
+.popup-note-text:hover {
+  color: var(--text-primary);
+}
+
+.popup-note-badge {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.popup-note-textarea {
+  width: 100%;
+  resize: none;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-family: inherit;
+  line-height: 1.5;
+  padding: 6px 8px;
+  outline: none;
+  box-sizing: border-box;
+  margin-top: 4px;
+}
+
+.popup-note-textarea:focus {
   border-color: var(--text-muted);
 }
 
-.highlight-comment-input::placeholder {
+.popup-note-textarea::placeholder {
   color: var(--text-muted);
 }
 
-.highlight-popup-actions {
+.popup-note-actions {
   display: flex;
   gap: 6px;
   justify-content: flex-end;
   margin-top: 7px;
 }
 
-.popup-action-btn {
-  height: 22px;
-  border-radius: 3px;
+.popup-note-btn {
+  height: 24px;
+  border-radius: 5px;
   font-size: 11px;
   font-family: inherit;
   font-weight: 500;
   cursor: pointer;
-  padding: 0 10px;
+  padding: 0 11px;
   border: 1px solid var(--border);
   background: none;
   color: var(--text-secondary);
-  white-space: nowrap;
 }
 
-.popup-action-btn:hover {
+.popup-note-btn:hover {
   border-color: var(--text-muted);
   color: var(--text-primary);
 }
 
-.popup-action-btn--save {
+.popup-note-btn--save {
   background: var(--text-primary);
   color: var(--bg-primary);
   border-color: var(--text-primary);
 }
 
-.popup-action-btn--save:hover {
+.popup-note-btn--save:hover {
   opacity: 0.82;
-  color: var(--bg-primary);
-}
-
-/* ── Highlight dot default indicator ── */
-.highlight-color-dot.default {
-  outline: 2.5px solid var(--text-primary);
-  outline-offset: 2px;
 }
 
 /* ══ Settings Page ══════════════════════════════════════════════════════════ */
