@@ -1050,11 +1050,18 @@ body {
 .chat-panel {
   flex: 1;
   min-width: 0;
-  border-left: 1px solid var(--border);
-  background: var(--bg-secondary);
+  border: 1px solid rgba(0, 0, 60, 0.1);
+  border-radius: 12px;
+  background: #f4f6fb;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
+}
+
+[data-theme='dark'] .chat-panel {
+  background: #1a1d26;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .chat-header {
