@@ -29,9 +29,11 @@ export function useHighlights(url: string) {
     })
   }
 
-  const addHighlight = (quote: string, color: HighlightColor, comment?: string) => {
-    const h: Highlight = { id: Date.now().toString(), url, quote, color, ...(comment ? { comment } : {}) }
+  const addHighlight = (quote: string, color: HighlightColor, comment?: string): string => {
+    const id = Date.now().toString()
+    const h: Highlight = { id, url, quote, color, ...(comment ? { comment } : {}) }
     persist([...highlights, h])
+    return id
   }
 
   const updateHighlight = (id: string, changes: { color?: HighlightColor; comment?: string }) => {
