@@ -15,6 +15,7 @@ interface HighlightPopupProps {
   mode: 'new' | 'edit'
   quote?: string
   initialComment?: string
+  defaultColor?: HighlightColor
   onColorSelect: (color: HighlightColor, comment: string) => void
   onCopy?: () => void
   onAskAI?: () => void
@@ -27,6 +28,7 @@ export default function HighlightPopup({
   position,
   mode,
   quote,
+  defaultColor,
   onColorSelect,
   onCopy,
   onAskAI,
@@ -73,7 +75,7 @@ export default function HighlightPopup({
           {COLORS.map(({ color, hex }) => (
             <button
               key={color}
-              className="highlight-color-dot"
+              className={`highlight-color-dot${mode === 'new' && defaultColor === color ? ' default' : ''}`}
               style={{ background: hex }}
               onClick={() => onColorSelect(color, commentRef.current)}
               aria-label={`Highlight ${color}`}
@@ -116,6 +118,14 @@ export default function HighlightPopup({
                 <button className="popup-action-btn" onClick={() => setComment('')}>
                   Clear
                 </button>
+                {mode === 'new' && (
+                  <button
+                    className="popup-action-btn popup-action-btn--save"
+                    onClick={() => onColorSelect(defaultColor ?? 'yellow', commentRef.current)}
+                  >
+                    Save
+                  </button>
+                )}
                 {mode === 'edit' && onSaveComment && (
                   <button
                     className="popup-action-btn popup-action-btn--save"
