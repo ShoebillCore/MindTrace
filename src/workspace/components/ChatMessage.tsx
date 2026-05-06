@@ -1,9 +1,9 @@
 import type { Message } from '../hooks/useChatHistory'
 
 const LABEL_COLORS: Record<string, string> = {
-  Summary: 'var(--accent-purple)',
-  'Deep Insight': 'var(--accent-blue)',
-  Questions: 'var(--accent-green)',
+  Summary: '#0060cc',
+  'Deep Insight': '#6d28d9',
+  Questions: '#15803d',
 }
 
 export default function ChatMessage({ message }: { message: Message }) {

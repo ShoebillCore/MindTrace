@@ -11,6 +11,12 @@ export const QUICK_SYSTEM_PROMPTS: Record<string, string> = {
 
 const ACTIONS: NonNullable<Message['label']>[] = ['Summary', 'Deep Insight', 'Questions']
 
+const ACTION_CLASSES: Record<string, string> = {
+  Summary: 'quick-action-btn--summary',
+  'Deep Insight': 'quick-action-btn--insight',
+  Questions: 'quick-action-btn--question',
+}
+
 interface QuickActionsProps {
   disabled: boolean
   onAction: (label: NonNullable<Message['label']>, systemPrompt: string) => void
@@ -22,7 +28,7 @@ export default function QuickActions({ disabled, onAction }: QuickActionsProps) 
       {ACTIONS.map((label) => (
         <button
           key={label}
-          className="quick-action-btn"
+          className={`quick-action-btn ${ACTION_CLASSES[label] ?? ''}`}
           disabled={disabled}
           onClick={() => onAction(label, QUICK_SYSTEM_PROMPTS[label])}
         >
