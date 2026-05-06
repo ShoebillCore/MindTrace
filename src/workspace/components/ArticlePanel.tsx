@@ -9,6 +9,7 @@ interface ArticlePanelProps {
   page: CapturedPage | null
   onAskAI?: (text: string) => void
   articleBodyRef: React.RefObject<HTMLDivElement | null>
+  defaultHighlightColor?: HighlightColor
 }
 
 interface PopupState {
@@ -17,6 +18,12 @@ interface PopupState {
   quote?: string
   highlightId?: string
   initialComment?: string
+}
+
+interface SelectionTooltipState {
+  tooltipPos: { top: number; left: number }
+  popupPos: { top: number; left: number }
+  quote: string
 }
 
 interface TimelineMarker {
@@ -43,11 +50,17 @@ function popupPosition(rect: DOMRect): { top: number; left: number } {
   return { top: rect.bottom + 8, left }
 }
 
-export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticlePanelProps) {
+function tooltipPosition(rect: DOMRect): { top: number; left: number } {
+  const left = Math.max(60, Math.min(window.innerWidth - 60, rect.left + rect.width / 2))
+  return { top: rect.bottom + 8, left }
+}
+
+export default function ArticlePanel({ page, onAskAI, articleBodyRef, defaultHighlightColor }: ArticlePanelProps) {
   const { highlights, addHighlight, updateHighlight, removeHighlight } = useHighlights(
     page?.url ?? '',
   )
   const [popup, setPopup] = useState<PopupState | null>(null)
+  const [selectionTooltip, setSelectionTooltip] = useState<SelectionTooltipState | null>(null)
   const [timelineMarkers, setTimelineMarkers] = useState<TimelineMarker[]>([])
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
@@ -122,16 +135,25 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
     if (!sel || sel.isCollapsed || !sel.toString().trim()) return
     const range = sel.getRangeAt(0)
     const rect = range.getBoundingClientRect()
-    setPopup({
-      mode: 'new',
-      position: popupPosition(rect),
+    setSelectionTooltip({
+      tooltipPos: tooltipPosition(rect),
+      popupPos: popupPosition(rect),
       quote: sel.toString().trim(),
     })
+    setPopup(null)
+  }
+
+  const handleTooltipClick = () => {
+    if (!selectionTooltip) return
+    setPopup({ mode: 'new', position: selectionTooltip.popupPos, quote: selectionTooltip.quote })
+    setSelectionTooltip(null)
+    window.getSelection()?.removeAllRanges()
   }
 
   const handleBodyClick = (e: React.MouseEvent) => {
     const target = (e.target as HTMLElement).closest('[data-highlight-id]') as HTMLElement | null
     if (!target) return
+    setSelectionTooltip(null)
     const id = target.dataset.highlightId
     const hl = highlights.find((h) => h.id === id)
     const rect = target.getBoundingClientRect()
@@ -190,12 +212,33 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef }: ArticleP
             onClick={handleBodyClick}
           />
         </div>
+        {selectionTooltip && !popup && (
+          <>
+            <div
+              className="selection-tooltip-backdrop"
+              onMouseDown={() => setSelectionTooltip(null)}
+            />
+            <div
+              className="selection-tooltip"
+              style={{ top: selectionTooltip.tooltipPos.top, left: selectionTooltip.tooltipPos.left }}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={handleTooltipClick}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              Highlight
+            </div>
+          </>
+        )}
         {popup && (
           <HighlightPopup
             position={popup.position}
             mode={popup.mode}
             quote={popup.quote}
             initialComment={popup.initialComment}
+            defaultColor={defaultHighlightColor}
             onColorSelect={handleColorSelect}
             onCopy={
               popup.mode === 'new' && popup.quote
