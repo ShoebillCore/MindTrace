@@ -1050,18 +1050,13 @@ body {
 .chat-panel {
   flex: 1;
   min-width: 0;
-  border: 1px solid rgba(0, 0, 60, 0.1);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #f4f6fb;
+  background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
-}
-
-[data-theme='dark'] .chat-panel {
-  background: #1a1d26;
-  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .chat-header {
@@ -1128,7 +1123,7 @@ body {
   display: flex;
   gap: 4px;
   padding: 8px 12px;
-  border-bottom: 1px solid rgba(0, 0, 60, 0.08);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   flex-wrap: wrap;
 }
@@ -1261,8 +1256,8 @@ body {
 }
 
 .chat-input-container {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 60, 0.1);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px 6px;
   display: flex;
@@ -1681,6 +1676,29 @@ body {
   border-color: var(--text-muted);
 }
 
+.sp-select {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23646262' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  padding-right: 28px;
+  margin-bottom: 12px;
+}
+
+.sp-select:focus {
+  border-color: var(--text-muted);
+}
+
 .sp-divider {
   height: 1px;
   background: var(--border);
@@ -1825,35 +1843,6 @@ body {
   font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }
 
-/* Provider pills */
-.sp-providers {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.sp-pill {
-  padding: 5px 12px;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  font-size: 11px;
-  font-family: inherit;
-  color: var(--text-muted);
-  cursor: pointer;
-  background: none;
-}
-
-.sp-pill:hover {
-  color: var(--text-primary);
-  border-color: var(--text-muted);
-}
-
-.sp-pill.active {
-  background: var(--text-primary);
-  color: var(--bg-primary);
-  border-color: var(--text-primary);
-}
 
 /* Folder section */
 .sp-folder-set {

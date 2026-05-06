@@ -1,6 +1,6 @@
 export type StreamStatus = 'idle' | 'loading' | 'streaming' | 'done' | 'error'
 
-export type ProviderName = 'claude' | 'openai' | 'gemini'
+export type ProviderName = 'claude' | 'openai' | 'gemini' | 'deepseek'
 
 export interface AIProvider {
   name: string
@@ -33,4 +33,5 @@ export interface CapturedPage {
 export interface Settings {
   selectedProvider: ProviderName
   apiKeys: Record<ProviderName, string>
+  selectedModels: Record<ProviderName, string>
 }

@@ -1,25 +1,24 @@
 import type { AIProvider } from './types'
 import { ProviderError } from './types'
 
-export function createClaudeProvider(apiKey: string, model: string): AIProvider {
+export function createDeepseekProvider(apiKey: string, model: string): AIProvider {
   return {
-    name: 'Claude',
+    name: 'Deepseek',
     model,
     async *stream(systemPrompt: string, userContent: string) {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model,
-          max_tokens: 1024,
           stream: true,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: userContent }],
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userContent },
+          ],
         }),
       })
 
@@ -43,16 +42,13 @@ export function createClaudeProvider(apiKey: string, model: string): AIProvider 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue
           const data = line.slice(6).trim()
+          if (data === '[DONE]') return
           try {
             const event = JSON.parse(data)
-            if (
-              event.type === 'content_block_delta' &&
-              event.delta?.type === 'text_delta'
-            ) {
-              yield event.delta.text as string
-            }
+            const content: string | undefined = event.choices?.[0]?.delta?.content
+            if (content) yield content
           } catch {
-            // skip malformed SSE lines
+            // skip malformed lines
           }
         }
       }

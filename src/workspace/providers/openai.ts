@@ -1,10 +1,10 @@
 import type { AIProvider } from './types'
 import { ProviderError } from './types'
 
-export function createOpenAIProvider(apiKey: string): AIProvider {
+export function createOpenAIProvider(apiKey: string, model: string): AIProvider {
   return {
     name: 'OpenAI',
-    model: 'gpt-4o',
+    model,
     async *stream(systemPrompt: string, userContent: string) {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -13,7 +13,7 @@ export function createOpenAIProvider(apiKey: string): AIProvider {
           'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4o',
+          model,
           stream: true,
           messages: [
             { role: 'system', content: systemPrompt },

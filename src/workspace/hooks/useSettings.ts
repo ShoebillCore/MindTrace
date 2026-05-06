@@ -3,7 +3,13 @@ import type { Settings, ProviderName } from '../providers/types'
 
 const DEFAULT_SETTINGS: Settings = {
   selectedProvider: 'claude',
-  apiKeys: { claude: '', openai: '', gemini: '' },
+  apiKeys: { claude: '', openai: '', gemini: '', deepseek: '' },
+  selectedModels: {
+    claude: 'claude-sonnet-4-6',
+    openai: 'gpt-4o',
+    gemini: 'gemini-2.0-flash',
+    deepseek: 'deepseek-chat',
+  },
 }
 
 export function useSettings() {
@@ -12,15 +18,20 @@ export function useSettings() {
 
   useEffect(() => {
     chrome.storage.local
-      .get(['selectedProvider', 'apiKeys'])
+      .get(['selectedProvider', 'apiKeys', 'selectedModels'])
       .then((data) => {
         setSettings({
           selectedProvider:
             (data.selectedProvider as ProviderName) ??
             DEFAULT_SETTINGS.selectedProvider,
-          apiKeys:
-            (data.apiKeys as Record<ProviderName, string>) ??
-            DEFAULT_SETTINGS.apiKeys,
+          apiKeys: {
+            ...DEFAULT_SETTINGS.apiKeys,
+            ...(data.apiKeys as Record<ProviderName, string> ?? {}),
+          },
+          selectedModels: {
+            ...DEFAULT_SETTINGS.selectedModels,
+            ...(data.selectedModels as Record<ProviderName, string> ?? {}),
+          },
         })
         setLoaded(true)
       })
@@ -32,6 +43,7 @@ export function useSettings() {
     chrome.storage.local.set({
       selectedProvider: merged.selectedProvider,
       apiKeys: merged.apiKeys,
+      selectedModels: merged.selectedModels,
     })
   }
 

@@ -1,13 +1,13 @@
 import type { AIProvider } from './types'
 import { ProviderError } from './types'
 
-export function createGeminiProvider(apiKey: string): AIProvider {
+export function createGeminiProvider(apiKey: string, model: string): AIProvider {
   return {
     name: 'Gemini',
-    model: 'gemini-2.0-flash',
+    model,
     async *stream(systemPrompt: string, userContent: string) {
       const url =
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent` +
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent` +
         `?key=${apiKey}&alt=sse`
 
       const response = await fetch(url, {

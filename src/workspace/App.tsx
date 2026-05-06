@@ -17,12 +17,12 @@ import SettingsPage from './components/SettingsPage'
 import OutlinePanel from './components/OutlinePanel'
 import Header from './components/Header'
 
-function getProvider(name: string, apiKey: string): AIProvider {
+function getProvider(name: string, apiKey: string, model: string): AIProvider {
   switch (name) {
-    case 'openai':   return createOpenAIProvider(apiKey)
-    case 'gemini':   return createGeminiProvider(apiKey)
-    case 'deepseek': return createDeepseekProvider(apiKey)
-    default:         return createClaudeProvider(apiKey)
+    case 'openai':   return createOpenAIProvider(apiKey, model)
+    case 'gemini':   return createGeminiProvider(apiKey, model)
+    case 'deepseek': return createDeepseekProvider(apiKey, model)
+    default:         return createClaudeProvider(apiKey, model)
   }
 }
 
@@ -145,8 +145,9 @@ export default function App() {
   }
 
   const currentKey = settings.apiKeys[settings.selectedProvider]
+  const currentModel = settings.selectedModels[settings.selectedProvider]
   const provider = currentKey
-    ? getProvider(settings.selectedProvider, currentKey)
+    ? getProvider(settings.selectedProvider, currentKey, currentModel)
     : null
 
   const handleSettingsOpen = () => {
@@ -165,8 +166,9 @@ export default function App() {
     apiKeys: Record<ProviderName, string>,
     selectedProvider: ProviderName,
     color: HighlightColor,
+    selectedModels: Record<ProviderName, string>,
   ) => {
-    saveSettings({ apiKeys, selectedProvider })
+    saveSettings({ apiKeys, selectedProvider, selectedModels })
     setDefaultHighlightColor(color)
     chrome.storage.local.set({ defaultHighlightColor: color })
     setSettingsOpen(false)
