@@ -1,15 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
-import type { CapturedPage, Settings, ProviderName } from '../providers/types'
+import type { CapturedPage } from '../providers/types'
 import type { ReaderSettings } from '../hooks/useReaderSettings'
 import ReaderSettingsPopup from './ReaderSettingsPopup'
 
 interface HeaderProps {
   page: CapturedPage | null
-  settings: Settings
   outlineOpen: boolean
   hasOutline: boolean
   onOutlineToggle: () => void
-  onProviderChange: (p: ProviderName) => void
   onSettingsOpen: () => void
   onDownload: () => void
   onOpenClaude: () => void
@@ -17,19 +15,11 @@ interface HeaderProps {
   onReaderSettingsChange: (next: Partial<ReaderSettings>) => void
 }
 
-const PROVIDERS: { value: ProviderName; label: string }[] = [
-  { value: 'claude', label: 'Claude' },
-  { value: 'openai', label: 'OpenAI' },
-  { value: 'gemini', label: 'Gemini' },
-]
-
 export default function Header({
   page,
-  settings,
   outlineOpen,
   hasOutline,
   onOutlineToggle,
-  onProviderChange,
   onSettingsOpen,
   onDownload,
   onOpenClaude,
@@ -72,16 +62,6 @@ export default function Header({
       </div>
 
       <div className="header-right">
-        <select
-          className="provider-select"
-          value={settings.selectedProvider}
-          onChange={(e) => onProviderChange(e.target.value as ProviderName)}
-        >
-          {PROVIDERS.map((p) => (
-            <option key={p.value} value={p.value}>{p.label}</option>
-          ))}
-        </select>
-
         <div ref={containerRef} style={{ position: 'relative' }}>
           <button
             className="reader-settings-btn"
@@ -99,20 +79,6 @@ export default function Header({
             />
           )}
         </div>
-
-        <button
-          className="open-claude-btn"
-          onClick={onOpenClaude}
-          disabled={!page}
-          title="Open in Claude.ai"
-          aria-label="Open in Claude.ai"
-        >
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 2.5H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V9" />
-            <path d="M9.5 2.5h3v3" />
-            <line x1="12.5" y1="2.5" x2="7" y2="8" />
-          </svg>
-        </button>
 
         <button
           className="download-btn"
