@@ -1903,8 +1903,8 @@ body {
 }
 
 .sp-swatch {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -1915,10 +1915,16 @@ body {
 
 .sp-swatch.active {
   outline: 2.5px solid var(--text-primary);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 /* Step controls */
+.sp-step-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
 .sp-step-row {
   display: flex;
   align-items: center;
@@ -1935,13 +1941,13 @@ body {
 .sp-step-btn {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 3px;
-  width: 24px;
-  height: 24px;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text-secondary);
   cursor: pointer;
   font-family: inherit;
@@ -1954,7 +1960,7 @@ body {
 }
 
 .sp-step-val {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-primary);
   min-width: 36px;
   text-align: center;
@@ -1964,15 +1970,15 @@ body {
 .sp-mode-pill {
   display: flex;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 7px;
   overflow: hidden;
   width: fit-content;
   margin-bottom: 14px;
 }
 
 .sp-mode-btn {
-  padding: 4px 12px;
-  font-size: 10px;
+  padding: 5px 16px;
+  font-size: 11.5px;
   font-family: inherit;
   background: none;
   border: none;
@@ -1995,7 +2001,7 @@ body {
 
 .sp-theme {
   border: 1.5px solid var(--border);
-  border-radius: 5px;
+  border-radius: 7px;
   overflow: hidden;
   cursor: pointer;
   background: none;
@@ -2013,7 +2019,7 @@ body {
 }
 
 .sp-theme-preview {
-  height: 38px;
+  height: 40px;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -2037,14 +2043,22 @@ body {
 /* Folder section */
 .sp-folder-set {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 8px;
 }
 
 .sp-folder-name {
-  font-size: 11px;
+  font-size: 12.5px;
+  flex: 1;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 11px;
   color: var(--text-secondary);
-  word-break: break-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sp-folder-actions {
@@ -2059,11 +2073,11 @@ body {
 }
 
 .sp-folder-btn {
-  padding: 5px 10px;
-  font-size: 11px;
+  padding: 7px 14px;
+  font-size: 12px;
   font-family: inherit;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 7px;
   background: none;
   color: var(--text-secondary);
   cursor: pointer;
@@ -2101,9 +2115,9 @@ body {
 }
 
 .sp-btn {
-  padding: 6px 14px;
-  border-radius: 3px;
-  font-size: 11px;
+  padding: 7px 16px;
+  border-radius: 7px;
+  font-size: 12px;
   font-family: inherit;
   cursor: pointer;
 }
