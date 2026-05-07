@@ -1,11 +1,8 @@
 # MindTraceReader
 
-An AI-powered reading workspace for Chrome. Click the toolbar icon on any webpage to instantly extract and render the main 
-article content in a clean, distraction-free reading view. Highlight passages in five colors, attach notes, and chat with  
-an AI about what you're reading — powered entirely by your own API key, with no data ever leaving your browser.            
-MindTraceReader also converts any article to Markdown with one click, letting you download a formatted .md file for your   
-notes or knowledge base. An outline panel automatically generated from the article's headings lets you jump to any section 
-instantly.  
+An AI-powered reading workspace for Chrome. Click the toolbar icon on any webpage to instantly extract and render the main article content in a clean, distraction-free reading view. Highlight passages in five colors, attach notes, and chat with an AI about what you're reading — powered entirely by your own API key, with no data ever leaving your browser.            
+
+MindTraceReader also converts any article to Markdown with one click, letting you download a formatted .md file for your notes or knowledge base. An outline panel automatically generated from the article's headings lets you jump to any section instantly.  
 
 ![MindTraceReader Logo](/public/icons/icon128.png)
 
