@@ -1,3 +1,4 @@
-chrome.runtime.onInstalled.addListener(() => {
-  // Extension installed — no setup needed for v1
+chrome.action.onClicked.addListener((tab) => {
+  if (tab.id == null) return
+  chrome.tabs.sendMessage(tab.id, { type: 'OPEN_MINDTRACE' })
 })

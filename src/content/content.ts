@@ -2,36 +2,6 @@ import Defuddle from 'defuddle'
 import DOMPurify from 'dompurify'
 import type { CapturedPage } from '../workspace/providers/types'
 
-function injectButton(): void {
-  if (document.getElementById('mindtrace-btn')) return
-
-  const btn = document.createElement('button')
-  btn.id = 'mindtrace-btn'
-  btn.title = 'Open MindTrace'
-  btn.textContent = 'M'
-  btn.style.cssText = [
-    'position:fixed',
-    'bottom:24px',
-    'right:24px',
-    'width:44px',
-    'height:44px',
-    'border-radius:50%',
-    'background:#1c1c1c',
-    'color:#fff',
-    'font-weight:700',
-    'font-size:18px',
-    'border:none',
-    'cursor:pointer',
-    'z-index:2147483647',
-    'box-shadow:0 2px 12px rgba(0,0,0,.35)',
-    'font-family:sans-serif',
-    'line-height:1',
-  ].join(';')
-
-  btn.addEventListener('click', handleClick)
-  document.body.appendChild(btn)
-}
-
 function showToast(message: string): void {
   const existing = document.getElementById('mindtrace-toast')
   if (existing) existing.remove()
@@ -41,7 +11,7 @@ function showToast(message: string): void {
   toast.textContent = message
   toast.style.cssText = [
     'position:fixed',
-    'bottom:80px',
+    'bottom:24px',
     'right:24px',
     'background:#1a1a2e',
     'color:#fff',
@@ -59,7 +29,7 @@ function showToast(message: string): void {
   setTimeout(() => toast.remove(), 3500)
 }
 
-async function handleClick(): Promise<void> {
+async function openMindTrace(): Promise<void> {
   const result = new Defuddle(document).parse()
 
   if (!result?.content?.trim()) {
@@ -90,8 +60,6 @@ async function handleClick(): Promise<void> {
   await chrome.storage.local.set({ capturedPage: captured })
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', injectButton)
-} else {
-  injectButton()
-}
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === 'OPEN_MINDTRACE') openMindTrace()
+})
