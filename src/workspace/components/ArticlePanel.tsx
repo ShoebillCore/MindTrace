@@ -1,4 +1,3 @@
-// src/workspace/components/ArticlePanel.tsx
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CapturedPage } from '../providers/types'
 import { useHighlights } from '../hooks/useHighlights'
@@ -76,16 +75,55 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef, defaultHig
   const [timelineMarkers, setTimelineMarkers] = useState<TimelineMarker[]>([])
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
+  // Refs so the document-level mouseup handler always reads the latest state
+  // without needing to be re-registered on every render.
+  const flashPillRef = useRef<FlashPillState | null>(null)
+  const editPopupRef = useRef<EditPopupState | null>(null)
+  useEffect(() => { flashPillRef.current = flashPill }, [flashPill])
+  useEffect(() => { editPopupRef.current = editPopup }, [editPopup])
+
+  // Document-level mouseup handler so tooltip fires even when the mouse is
+  // released outside the article-body div (e.g. on the title, scroll area,
+  // or after dragging past the edge of the panel).
+  useEffect(() => {
+    const onMouseUp = () => {
+      if (flashPillRef.current || editPopupRef.current) return
+      const sel = window.getSelection()
+      if (!sel || sel.isCollapsed || !sel.toString().trim()) return
+      const body = articleBodyRef.current
+      if (!body) return
+      const range = sel.getRangeAt(0)
+      // Only act when at least one endpoint of the selection is inside the article body
+      if (!body.contains(range.startContainer) && !body.contains(range.endContainer)) return
+      const rect = range.getBoundingClientRect()
+      // Normalize whitespace so cross-block selections (which carry \n between paragraphs)
+      // still produce a clean quote that matches the flat text we search later.
+      const quote = sel.toString().replace(/\s+/g, ' ').trim()
+      if (!quote) return
+      setSelectionTooltip({
+        tooltipPos: tooltipPosition(rect),
+        flashPillPos: flashPillPosition(rect),
+        quote,
+      })
+    }
+    document.addEventListener('mouseup', onMouseUp)
+    return () => document.removeEventListener('mouseup', onMouseUp)
+  }, [articleBodyRef]) // articleBodyRef is stable — registers once
+
   // Apply highlight spans to the DOM
   useLayoutEffect(() => {
     const body = articleBodyRef.current
     if (!body) return
 
+    // Remove all existing highlight spans
     body.querySelectorAll('[data-highlight-id]').forEach((span) => {
       const parent = span.parentNode!
       while (span.firstChild) parent.insertBefore(span.firstChild, span)
       parent.removeChild(span)
     })
+    // Merge text nodes that were split by previous span insertions so subsequent
+    // indexOf/regex searches work against a consistent flat string.
+    body.normalize()
 
     for (const hl of highlights) {
       const textNodes: Text[] = []
@@ -99,40 +137,48 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef, defaultHig
         textNodes.push(tn)
       }
 
-      const idx = flat.indexOf(hl.quote)
-      if (idx === -1) continue
+      // Use flexible whitespace matching (\s*) so that a quote saved with a
+      // space between paragraphs still matches flat text that has no whitespace
+      // at that boundary (when the HTML has no text node between block elements).
+      const escapedQuote = hl.quote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const pattern = new RegExp(escapedQuote.replace(/\s+/g, '\\s*'))
+      const match = pattern.exec(flat)
+      if (!match) continue
 
-      const end = idx + hl.quote.length
+      const idx = match.index
+      const end = idx + match[0].length
 
-      let startNode!: Text, startOff = 0
+      let startNodeIdx = -1, startOff = 0
       for (let i = textNodes.length - 1; i >= 0; i--) {
-        if (offsets[i] <= idx) { startNode = textNodes[i]; startOff = idx - offsets[i]; break }
+        if (offsets[i] <= idx) { startNodeIdx = i; startOff = idx - offsets[i]; break }
       }
+      if (startNodeIdx === -1) continue
 
-      let endNode!: Text, endOff = 0
+      let endNodeIdx = -1, endOff = 0
       for (let i = textNodes.length - 1; i >= 0; i--) {
-        if (offsets[i] < end) { endNode = textNodes[i]; endOff = end - offsets[i]; break }
+        if (offsets[i] < end) { endNodeIdx = i; endOff = end - offsets[i]; break }
       }
+      if (endNodeIdx === -1) continue
 
-      if (!startNode || !endNode) continue
-
-      try {
-        const range = document.createRange()
-        range.setStart(startNode, startOff)
-        range.setEnd(endNode, endOff)
-        const span = document.createElement('span')
-        span.className = `hl-${hl.color}`
-        span.dataset.highlightId = hl.id
-        range.surroundContents(span)
-      } catch {
-        if (startNode === endNode) {
-          const matchNode = startNode.splitText(startOff)
-          matchNode.splitText(hl.quote.length)
+      // Apply one span per text-node segment within the range.
+      // surroundContents on a single text node always succeeds — no element
+      // boundary is ever partially crossed, so cross-inline-element selections
+      // (e.g. spanning <em> or <strong>) are handled correctly.
+      for (let ni = startNodeIdx; ni <= endNodeIdx; ni++) {
+        const node = textNodes[ni]
+        const segStart = ni === startNodeIdx ? startOff : 0
+        const segEnd = ni === endNodeIdx ? endOff : (node.nodeValue?.length ?? 0)
+        if (segStart >= segEnd) continue
+        try {
+          const segRange = document.createRange()
+          segRange.setStart(node, segStart)
+          segRange.setEnd(node, segEnd)
           const span = document.createElement('span')
           span.className = `hl-${hl.color}`
           span.dataset.highlightId = hl.id
-          matchNode.parentNode!.insertBefore(span, matchNode)
-          span.appendChild(matchNode)
+          segRange.surroundContents(span)
+        } catch {
+          // skip this segment
         }
       }
     }
@@ -170,19 +216,6 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef, defaultHig
     const areaRect = area.getBoundingClientRect()
     const target = area.scrollTop + (elRect.top - areaRect.top) - area.clientHeight / 2 + el.clientHeight / 2
     area.scrollTo({ top: Math.max(0, target), behavior: 'smooth' })
-  }
-
-  const handleMouseUp = () => {
-    if (flashPill || editPopup) return
-    const sel = window.getSelection()
-    if (!sel || sel.isCollapsed || !sel.toString().trim()) return
-    const range = sel.getRangeAt(0)
-    const rect = range.getBoundingClientRect()
-    setSelectionTooltip({
-      tooltipPos: tooltipPosition(rect),
-      flashPillPos: flashPillPosition(rect),
-      quote: sel.toString().trim(),
-    })
   }
 
   const handleTooltipClick = () => {
@@ -245,7 +278,6 @@ export default function ArticlePanel({ page, onAskAI, articleBodyRef, defaultHig
             ref={articleBodyRef}
             className="article-body"
             dangerouslySetInnerHTML={{ __html: page.content }}
-            onMouseUp={handleMouseUp}
             onClick={handleBodyClick}
           />
         </div>

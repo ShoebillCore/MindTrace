@@ -63,12 +63,24 @@ export default function ChatPanel({
 
   const headerProps = { provider, onClose }
 
+  const PROVIDER_LABELS: Record<string, string> = {
+    claude: 'Anthropic (Claude)',
+    openai: 'OpenAI',
+    gemini: 'Google Gemini',
+    deepseek: 'Deepseek',
+  }
+
   if (!provider) {
+    const label = PROVIDER_LABELS[settings.selectedProvider] ?? settings.selectedProvider
     return (
       <div className="chat-panel">
         <ChatHeader provider={null} {...headerProps} />
         <div className="no-key-prompt">
-          <p>Enter an API key to activate the AI workspace.</p>
+          <div className="no-key-icon">🔑</div>
+          <p className="no-key-title">API key required</p>
+          <p className="no-key-body">
+            Add your <strong>{label}</strong> API key in Settings to start chatting.
+          </p>
           <button onClick={onSettingsOpen}>Open Settings</button>
         </div>
       </div>

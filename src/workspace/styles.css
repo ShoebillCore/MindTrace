@@ -597,25 +597,48 @@ body {
 }
 
 .no-key-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: 48px 24px;
+  padding: 52px 28px;
+  gap: 6px;
+}
+
+.no-key-icon {
+  font-size: 30px;
+  margin-bottom: 6px;
+  opacity: 0.65;
+}
+
+.no-key-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.no-key-body {
+  font-size: 13px;
   color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.55;
+  margin: 0 0 10px;
 }
 
 .no-key-prompt button {
-  margin-top: 12px;
   background: var(--text-primary);
   color: var(--bg-primary);
   border: none;
-  border-radius: 4px;
-  padding: 6px 16px;
+  border-radius: 7px;
+  padding: 8px 18px;
   font-size: 13px;
   font-family: inherit;
   font-weight: 500;
   cursor: pointer;
-  line-height: 2;
+}
+
+.no-key-prompt button:hover {
+  opacity: 0.82;
 }
 
 .warning-banner {

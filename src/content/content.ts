@@ -33,7 +33,7 @@ async function openMindTrace(): Promise<void> {
   const result = new Defuddle(document).parse()
 
   if (!result?.content?.trim()) {
-    showToast("MindTrace couldn't extract readable content from this page.")
+    showToast("MindTraceReader couldn't extract readable content from this page.")
     return
   }
 

@@ -1,18 +1,100 @@
-# MindTrace
+# MindTraceReader
 
-A Chrome extension that transforms any article into an active reading workspace. Highlight text in five colors, open a side chat to ask questions, get summaries, and extract insights — all without leaving the page.
+An AI-powered reading workspace for Chrome. Click the toolbar icon on any webpage to instantly extract and render the main 
+article content in a clean, distraction-free reading view. Highlight passages in five colors, attach notes, and chat with  
+an AI about what you're reading — powered entirely by your own API key, with no data ever leaving your browser.            
+MindTraceReader also converts any article to Markdown with one click, letting you download a formatted .md file for your   
+notes or knowledge base. An outline panel automatically generated from the article's headings lets you jump to any section 
+instantly.  
 
-![MindTrace Logo](/public/icons/icon128.png)
+![MindTraceReader Logo](/public/icons/icon128.png)
 
 ---
 
 ## Features
 
-- **Article workspace** — click the MindTrace button on any page to open a clean reading view powered by Mozilla Readability
-- **AI chat panel** — floating button opens a full-height side chat with your chosen AI provider; quick-action buttons for Summary, Deep Insight, and Questions
-- **Text highlighting** — select any text to highlight it in yellow, green, blue, pink, or purple; highlights persist per URL across sessions
-- **Multi-provider support** — Claude (Anthropic), GPT-4o (OpenAI), and Gemini 2.0 Flash (Google)
-- **Dark / light theme** — toggle in the workspace header
+### Article Workspace
+Click the MindTraceReader icon in the Chrome toolbar on any page. The extension extracts the main article content (powered by [Defuddle](https://github.com/kepano/defuddle)), strips away ads and navigation, and opens it in a focused reading tab.
+
+### Text Highlighting
+Select any passage to highlight it. A color picker flashes above the selection — choose from five colors:
+
+| Color | Use |
+|---|---|
+| 🟡 Yellow | General interest |
+| 🟢 Green | Key facts |
+| 🔵 Blue | Definitions / concepts |
+| 🩷 Pink | Questions to revisit |
+| 🟣 Purple | Strong agreement / disagreement |
+
+Click any existing highlight to open a popup where you can change its color, add a note, or delete it. Highlights and notes are saved per URL in `chrome.storage.local` and persist across sessions.
+
+### AI Chat Panel
+Open the chat panel (💬 button, top-right of the workspace) to talk to an AI about what you're reading.
+
+**Quick actions** — one-click prompts pre-loaded with the full article context:
+- **Summary** — concise overview of the article
+- **Deep Insight** — themes, implications, and analysis
+- **Questions** — thought-provoking questions to deepen understanding
+
+**Free-form chat** — ask anything about the article; the AI always has the full text in context.
+
+Responses stream in real time. All requests go directly from your browser to the provider's API — nothing passes through any third-party server.
+
+### Reader Settings
+Adjust the reading experience from the header:
+
+| Control | Range |
+|---|---|
+| Font size | 12 – 24 px (±1 px steps) |
+| Content width | 30 – 90 % (±5 % steps) |
+| Mode | Light / Dark |
+
+### Themes
+Eight carefully chosen color schemes, each available in both light and dark mode:
+
+| Theme | Inspired by |
+|---|---|
+| **Default** | Clean warm neutrals |
+| **GitHub** | GitHub's editor palette |
+| **Catppuccin** | Catppuccin Mocha |
+| **Rosé Pine** | Rosé Pine |
+| **Flexoki** | Flexoki ink tones |
+| **Ayu** | Ayu Mirage |
+| **Gruvbox** | Gruvbox dark |
+| **Penumbra** | Penumbra dark |
+
+Preview and apply themes live from the Settings page — the article updates instantly behind the modal.
+
+### Settings Page
+A structured settings panel (gear icon in the header) with four sections:
+
+- **Highlighter** — pick a default highlight color pre-selected whenever you highlight new text
+- **Reader** — font size, content width, mode, and theme
+- **Interpreter** — choose your AI provider and enter your API key
+- **General** — download folder for exported content
+
+---
+
+## Supported AI Providers
+
+| Provider | Default model | Get an API key |
+|---|---|---|
+| **Claude** (Anthropic) | `claude-sonnet-4-6` | [console.anthropic.com](https://console.anthropic.com) |
+| **OpenAI** | `gpt-4o` | [platform.openai.com](https://platform.openai.com) |
+| **Google Gemini** | `gemini-2.0-flash` | [aistudio.google.com](https://aistudio.google.com) |
+| **Deepseek** | `deepseek-chat` | [platform.deepseek.com](https://platform.deepseek.com) |
+
+Keys are stored locally in `chrome.storage.local` and sent only to the respective provider. You can configure multiple providers and switch between them at any time.
+
+---
+
+## Privacy
+
+- No account required
+- No data collected or sent to any MindTraceReader server
+- API keys never leave your browser except in requests to your chosen AI provider
+- Highlights and notes are stored locally in `chrome.storage.local`
 
 ---
 
@@ -23,9 +105,9 @@ A Chrome extension that transforms any article into an active reading workspace.
 | Extension platform | Chrome Manifest V3 |
 | UI framework | React 18 + TypeScript |
 | Build tool | Vite + vite-plugin-web-extension |
+| Article parsing | Defuddle |
 | AI streaming | Native `fetch` SSE (no SDK dependency) |
 | Persistence | `chrome.storage.local` |
-| Article parsing | `@mozilla/readability` |
 | Unit tests | Vitest + @testing-library/react |
 | E2E tests | Playwright (headful Chrome) |
 
@@ -35,19 +117,17 @@ A Chrome extension that transforms any article into an active reading workspace.
 
 ```
 src/
-  content/          # Content script — captures page and opens workspace
-  background/       # Service worker
+  content/          # Content script — extracts page content, opens workspace
+  background/       # Service worker — handles toolbar icon click
   workspace/
-    components/     # React components (ArticlePanel, ChatPanel, HighlightPopup, …)
-    hooks/          # useStream, useChatHistory, useHighlights, useSettings, useTheme
-    providers/      # Claude, OpenAI, Gemini streaming adapters
+    components/     # React components (ArticlePanel, ChatPanel, SettingsPage, …)
+    hooks/          # useStream, useChatHistory, useHighlights, useSettings, useReaderSettings
+    providers/      # Claude, OpenAI, Gemini, Deepseek streaming adapters
+    themes.ts       # Eight theme token sets (light + dark each)
     styles.css
     App.tsx
 public/
   icons/            # Extension icons (16, 48, 128 px)
-tests/
-  unit/             # Vitest unit tests
-  e2e/              # Playwright end-to-end tests
 ```
 
 ---
@@ -56,7 +136,7 @@ tests/
 
 ### Prerequisites
 
-- Node.js 20+ (tested on v24)
+- Node.js 20+
 - Chrome or Chromium
 
 ### Install dependencies
@@ -71,7 +151,7 @@ npm install
 npm run build
 ```
 
-The built extension is output to `dist/`.
+Output goes to `dist/`.
 
 ### Load into Chrome
 
@@ -89,55 +169,33 @@ Vite rebuilds on every file save. After each rebuild, click the reload icon on t
 
 ---
 
-## Configuration
-
-MindTrace requires an API key for at least one AI provider. Open the workspace settings drawer (gear icon in the header) and paste your key:
-
-| Provider | Where to get a key |
-|---|---|
-| Claude | [console.anthropic.com](https://console.anthropic.com) |
-| OpenAI | [platform.openai.com](https://platform.openai.com) |
-| Gemini | [aistudio.google.com](https://aistudio.google.com) |
-
-Keys are stored locally in `chrome.storage.local` and never sent anywhere except the respective provider's API.
-
----
-
 ## Usage
 
-1. Navigate to any article
-2. Click the **MindTrace** extension icon in the Chrome toolbar
+1. Navigate to any article or webpage
+2. Click the **MindTraceReader** icon in the Chrome toolbar
 3. The article opens in a clean workspace tab
-4. Click the **💬** floating button (bottom-right) to open the AI chat panel
-5. Use quick actions (**Summary**, **Deep Insight**, **Questions**) or type a free-form question
-6. Select any text in the article to highlight it; click an existing highlight to change its color or delete it
+4. Use the **reader controls** in the header to adjust font, width, and mode
+5. Open **Settings** (gear icon) to choose a theme, configure your AI provider, and set a default highlight color
+6. Open the **AI chat panel** (💬) to summarize, ask questions, or explore the article
+7. **Select text** to highlight it; click an existing highlight to edit color, add a note, or delete
 
 ---
 
 ## Running Tests
 
-### Unit tests
-
 ```bash
+# Unit tests
 npm test
-```
 
-### Unit tests in watch mode
-
-```bash
+# Unit tests in watch mode
 npm run test:watch
-```
 
-### End-to-end tests
-
-E2E tests require a built extension and run in a real Chrome window.
-
-```bash
+# End-to-end tests (requires a built extension)
 npm run build
 npm run test:e2e
 ```
 
-> **Note:** Playwright runs Chrome in headful (non-headless) mode because extensions are not supported in headless Chrome.
+> Playwright runs Chrome in headful mode — extensions are not supported in headless Chrome.
 
 ---
 
