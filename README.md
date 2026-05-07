@@ -10,10 +10,9 @@ MindTraceReader also converts any article to Markdown with one click, letting yo
 
 ## Screenshots
 
-![Screenshot 1](screenshot.jpg)
-![Screenshot 2](screenshot2.jpg)
-![Screenshot 3](screenshot3.jpg)
-![Screenshot 4](screenshot4.jpg)
+![Screenshot 1](/public/MindTraceReader1.jpg)
+![Screenshot 2](/public/MindTraceReader2.jpg)
+![Screenshot 3](/public/MindTraceReader3.jpg)
 
 ---
 
